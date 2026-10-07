@@ -72,6 +72,27 @@ describe('zodiac command', () => {
         });
     });
 
+    describe('inferred relations', () => {
+        const inferred = path.join(fixtures, 'inferred');
+
+        it('links fields such as shopId to their schema by default', async () => {
+            const { done, stdout } = run(inferred, '-f', 'mermaid');
+            await done;
+
+            expect(stdout.join('')).toContain('Order ||..|| Shop : "shopId"');
+        });
+
+        it('keeps them out of the viewer data with --no-inferred-relations', async () => {
+            const withRelations = run(inferred, '--no-open');
+            await withRelations.done;
+            const withoutRelations = run(inferred, '--no-open', '--no-inferred-relations');
+            await withoutRelations.done;
+
+            expect(withRelations.launches[0]?.graph.relations.map((relation) => relation.kind)).toEqual(['inferred']);
+            expect(withoutRelations.launches[0]?.graph.relations).toEqual([]);
+        });
+    });
+
     describe('mermaid format', () => {
         it('prints a Mermaid diagram without launching the viewer', async () => {
             const { done, stdout, stderr, launches } = run(shop, '--format', 'mermaid');

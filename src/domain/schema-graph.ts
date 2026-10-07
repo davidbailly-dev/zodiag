@@ -1,4 +1,5 @@
 import { DuplicateNodeNameError, UnknownReferenceError } from './errors.js';
+import { inferRelations } from './infer-relations.js';
 import type { Cardinality, Relation } from './relation.js';
 import type { SchemaNode } from './schema-node.js';
 import { findReferences } from './type-expression.js';
@@ -41,14 +42,15 @@ export class SchemaGraph {
                         : field.optional || field.nullable || reference.alternative
                           ? 'zero-or-one'
                           : 'one';
-                    const key = `${node.name}|${field.name}|${target.name}`;
-                    if (!relations.has(key)) {
-                        relations.set(key, {
-                            source: node.name,
-                            target: target.name,
-                            fieldName: field.name,
-                            cardinality,
-                        });
+                    const relation: Relation = {
+                        source: node.name,
+                        target: target.name,
+                        fieldName: field.name,
+                        cardinality,
+                        kind: 'explicit',
+                    };
+                    if (!relations.has(relationKey(relation))) {
+                        relations.set(relationKey(relation), relation);
                     }
                 }
             }
@@ -57,7 +59,18 @@ export class SchemaGraph {
         return new SchemaGraph(nodes, [...relations.values()]);
     }
 
+    // A copy of the graph with the relations guessed from field names added. Calling it again changes nothing.
+    withInferredRelations(): SchemaGraph {
+        const known = new Set(this.relations.map(relationKey));
+        const inferred = inferRelations(this.nodes).filter((relation) => !known.has(relationKey(relation)));
+        return new SchemaGraph(this.nodes, [...this.relations, ...inferred]);
+    }
+
     findNode(name: string): SchemaNode | undefined {
         return this.nodes.find((node) => node.name === name);
     }
+}
+
+function relationKey(relation: Relation): string {
+    return `${relation.source}|${relation.fieldName}|${relation.target}`;
 }

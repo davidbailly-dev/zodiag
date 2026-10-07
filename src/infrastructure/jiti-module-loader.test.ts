@@ -54,8 +54,8 @@ describe('schema extraction from files', () => {
             ['Shop', 'object', 'shop.ts'],
         ]);
         expect(graph.relations).toEqual([
-            { source: 'Order', target: 'Shop', fieldName: 'shop', cardinality: 'one' },
-            { source: 'Order', target: 'OrderLine', fieldName: 'lines', cardinality: 'many' },
+            { source: 'Order', target: 'Shop', fieldName: 'shop', kind: 'explicit', cardinality: 'one' },
+            { source: 'Order', target: 'OrderLine', fieldName: 'lines', kind: 'explicit', cardinality: 'many' },
         ]);
     });
 });
