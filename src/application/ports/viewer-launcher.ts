@@ -8,6 +8,8 @@ export interface ViewerOptions {
 
 export interface RunningViewer {
     readonly url: string;
+    // Replaces the graph and tells the open pages to reload it.
+    update(graph: SchemaGraph): void;
     close(): Promise<void>;
 }
 

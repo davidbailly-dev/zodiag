@@ -1,4 +1,4 @@
-import { request } from 'node:http';
+import { get, request } from 'node:http';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
@@ -57,6 +57,29 @@ function rawGet(url: string, requestPath: string, headers: Record<string, string
     });
 }
 
+// Opens the event stream and collects what the server sends on it.
+function openEventStream(url: string) {
+    let received = '';
+    let status = 0;
+    const clientRequest = get(`${url}/events`, (response) => {
+        status = response.statusCode ?? 0;
+        response.setEncoding('utf8');
+        response.on('data', (chunk: string) => (received += chunk));
+    });
+    clientRequest.on('error', () => undefined);
+    return {
+        received: () => received,
+        status: () => status,
+        close: () => clientRequest.destroy(),
+    };
+}
+
+async function waitFor(condition: () => boolean): Promise<void> {
+    for (let attempt = 0; attempt < 100 && !condition(); attempt += 1) {
+        await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+}
+
 describe('HttpViewerLauncher', () => {
     it('serves the viewer page and its assets with the right content types', async () => {
         const { url } = await launch();
@@ -79,6 +102,40 @@ describe('HttpViewerLauncher', () => {
         expect(await response.json()).toEqual(JSON.parse(JSON.stringify({ nodes: graph.nodes, relations: graph.relations })));
     });
 
+    it('serves the new graph after an update and announces it to the open pages', async () => {
+        const viewer = await launch();
+        const stream = openEventStream(viewer.url);
+        await waitFor(() => stream.received().includes('retry:'));
+        expect(stream.status()).toBe(200);
+
+        const updated = SchemaGraph.create([
+            { kind: 'object', name: 'Order', source: 'order.ts', fields: [] },
+            { kind: 'object', name: 'Shop', source: 'shop.ts', fields: [] },
+        ]);
+        viewer.update(updated);
+        await waitFor(() => stream.received().includes('event: graph'));
+        stream.close();
+
+        expect(stream.received()).toContain('event: graph\ndata: updated\n\n');
+        const body = (await (await fetch(`${viewer.url}/graph.json`)).json()) as { nodes: { name: string }[] };
+        expect(body.nodes.map((node) => node.name)).toEqual(['Order', 'Shop']);
+    });
+
+    it('does not notify pages that have disconnected, and still shuts down with an open stream', async () => {
+        const viewer = await launch();
+        const gone = openEventStream(viewer.url);
+        const staying = openEventStream(viewer.url);
+        await waitFor(() => gone.received().includes('retry:') && staying.received().includes('retry:'));
+        gone.close();
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        viewer.update(graph);
+        await waitFor(() => staying.received().includes('event: graph'));
+
+        expect(staying.received()).toContain('event: graph');
+        expect(gone.received()).not.toContain('event: graph');
+    });
+
     it('answers 404 for unknown files and 405 for other methods', async () => {
         const { url } = await launch();
 
@@ -99,9 +156,11 @@ describe('HttpViewerLauncher', () => {
     it('rejects requests addressed to a foreign host (DNS rebinding)', async () => {
         const { url } = await launch();
 
-        const { status } = await rawGet(url, '/graph.json', { host: 'evil.example.com' });
+        for (const requestPath of ['/graph.json', '/events']) {
+            const { status } = await rawGet(url, requestPath, { host: 'evil.example.com' });
 
-        expect(status).toBe(403);
+            expect(status).toBe(403);
+        }
     });
 
     it('opens the browser only when asked to', async () => {

@@ -22,8 +22,8 @@ const CONTENT_TYPES: Readonly<Record<string, string>> = {
     '.woff2': 'font/woff2',
 };
 
-// Serves the built viewer (static files) and the schema graph (`/graph.json`) on the loopback
-// interface only.
+// Serves the built viewer (static files), the schema graph (`/graph.json`) and a stream of
+// server-sent events (`/events`) announcing that the graph changed, on the loopback interface only.
 export class HttpViewerLauncher implements ViewerLauncher {
     private readonly assetsDirectory: string;
     private readonly open: (url: string) => void;
@@ -40,10 +40,11 @@ export class HttpViewerLauncher implements ViewerLauncher {
             throw new Error(`Viewer files not found in ${this.assetsDirectory}. Run "npm run build" first.`);
         }
 
-        const graphJson = JSON.stringify({ nodes: graph.nodes, relations: graph.relations });
+        let graphJson = serialize(graph);
+        const subscribers = new Set<ServerResponse>();
         let port = 0;
         const server = createServer((request, response) => {
-            this.handle(request, response, port, graphJson).catch(() => {
+            this.handle(request, response, port, () => graphJson, subscribers).catch(() => {
                 respond(response, 500, 'text/plain; charset=utf-8', 'Internal server error');
             });
         });
@@ -53,14 +54,24 @@ export class HttpViewerLauncher implements ViewerLauncher {
         if (options.open) {
             this.open(url);
         }
-        return { url, close: () => close(server) };
+        return {
+            url,
+            update: (updatedGraph) => {
+                graphJson = serialize(updatedGraph);
+                for (const subscriber of subscribers) {
+                    subscriber.write('event: graph\ndata: updated\n\n');
+                }
+            },
+            close: () => close(server),
+        };
     }
 
     private async handle(
         request: IncomingMessage,
         response: ServerResponse,
         port: number,
-        graphJson: string,
+        graphJson: () => string,
+        subscribers: Set<ServerResponse>,
     ): Promise<void> {
         // Refuse foreign Host headers: a web page must not be able to read the schemas through DNS rebinding.
         if (request.headers.host !== `${HOST}:${port}` && request.headers.host !== `localhost:${port}`) {
@@ -74,7 +85,19 @@ export class HttpViewerLauncher implements ViewerLauncher {
 
         const { pathname } = new URL(request.url ?? '/', `http://${HOST}`);
         if (pathname === '/graph.json') {
-            respond(response, 200, CONTENT_TYPES['.json'] as string, graphJson, request.method === 'HEAD');
+            respond(response, 200, CONTENT_TYPES['.json'] as string, graphJson(), request.method === 'HEAD');
+            return;
+        }
+        if (pathname === '/events') {
+            response.writeHead(200, {
+                'Content-Type': 'text/event-stream',
+                'Cache-Control': 'no-store',
+                'X-Content-Type-Options': 'nosniff',
+            });
+            // Tells the browser how long to wait before reconnecting if the stream is cut.
+            response.write('retry: 1000\n\n');
+            subscribers.add(response);
+            response.on('close', () => subscribers.delete(response));
             return;
         }
 
@@ -92,6 +115,10 @@ export class HttpViewerLauncher implements ViewerLauncher {
         const contentType = CONTENT_TYPES[path.extname(filePath)] ?? 'application/octet-stream';
         respond(response, 200, contentType, content, request.method === 'HEAD');
     }
+}
+
+function serialize(graph: SchemaGraph): string {
+    return JSON.stringify({ nodes: graph.nodes, relations: graph.relations });
 }
 
 // The viewer is built into `dist/viewer`, next to the compiled `dist/infrastructure`.

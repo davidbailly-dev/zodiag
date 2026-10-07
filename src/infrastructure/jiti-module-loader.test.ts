@@ -1,3 +1,5 @@
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { ExtractSchemaGraph } from '../application/extract-schema-graph.js';
@@ -33,6 +35,26 @@ describe('JitiModuleLoader', () => {
         expect(failures).toHaveLength(1);
         expect(failures[0]).toMatchObject({ filePath: 'broken.ts' });
         expect(failures[0]?.message).toContain('Cannot load this module');
+    });
+
+    it('reads a modified file again on the next load, even one imported by another file', async () => {
+        const directory = await mkdtemp(path.join(os.tmpdir(), 'zodiac-reload-'));
+        try {
+            await writeFile(path.join(directory, 'shared.ts'), 'export const shared = 1;');
+            await writeFile(path.join(directory, 'main.ts'), "import { shared } from './shared';\nexport const value = shared;");
+            const loader = new JitiModuleLoader();
+            const valueOf = async () => {
+                const { modules } = await loader.load(directory);
+                return modules.find((module) => module.filePath === 'main.ts')?.exports['value'];
+            };
+
+            expect(await valueOf()).toBe(1);
+
+            await writeFile(path.join(directory, 'shared.ts'), 'export const shared = 2;');
+            expect(await valueOf()).toBe(2);
+        } finally {
+            await rm(directory, { recursive: true });
+        }
     });
 
     it('rejects a target that does not exist', async () => {
