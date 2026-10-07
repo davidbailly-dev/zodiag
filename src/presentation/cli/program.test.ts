@@ -1,11 +1,13 @@
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import type { ChangeWatcher } from '../../application/ports/change-watcher.js';
 import type { ViewerLauncher, ViewerOptions } from '../../application/ports/viewer-launcher.js';
 import type { SchemaGraph } from '../../domain/index.js';
 import { createDefaultDependencies } from './composition.js';
 import { createProgram } from './program.js';
+import type { CliDependencies } from './program.js';
 
 const fixtures = path.resolve(import.meta.dirname, '../../../tests/fixtures');
 const temporaryDirectories: string[] = [];
@@ -14,24 +16,43 @@ afterEach(async () => {
     await Promise.all(temporaryDirectories.splice(0).map((directory) => rm(directory, { recursive: true })));
 });
 
-function run(...args: string[]) {
+function runWith(overrides: Partial<CliDependencies>, ...args: string[]) {
     const stdout: string[] = [];
     const stderr: string[] = [];
     const launches: { graph: SchemaGraph; options: ViewerOptions }[] = [];
+    const updates: SchemaGraph[] = [];
+    const watches: { target: string; trigger(): void; closed: boolean }[] = [];
     const viewerLauncher: ViewerLauncher = {
         launch: async (graph, options) => {
             launches.push({ graph, options });
-            return { url: 'http://127.0.0.1:4000', close: async () => undefined };
+            return {
+                url: 'http://127.0.0.1:4000',
+                update: (updated) => updates.push(updated),
+                close: async () => undefined,
+            };
+        },
+    };
+    const changeWatcher: ChangeWatcher = {
+        watch: (target, onChange) => {
+            const watch = { target, trigger: onChange, closed: false };
+            watches.push(watch);
+            return { close: () => (watch.closed = true) };
         },
     };
     const program = createProgram({
         ...createDefaultDependencies(),
         viewerLauncher,
+        changeWatcher,
         io: { stdout: (text) => stdout.push(text), stderr: (text) => stderr.push(text) },
+        ...overrides,
     });
     program.exitOverride().configureOutput({ writeOut: () => undefined, writeErr: () => undefined });
     const done = program.parseAsync(['node', 'zodiac', ...args]);
-    return { done, stdout, stderr, launches };
+    return { done, stdout, stderr, launches, updates, watches };
+}
+
+function run(...args: string[]) {
+    return runWith({}, ...args);
 }
 
 describe('zodiac command', () => {
@@ -69,6 +90,63 @@ describe('zodiac command', () => {
 
             await expect(done).rejects.toThrow('--output is not supported by the viewer');
             expect(launches).toEqual([]);
+        });
+    });
+
+    describe('watch mode', () => {
+        it('watches the target and reloads the viewer when it changes', async () => {
+            const { done, watches, updates, stderr } = run(shop, '--no-open');
+            await done;
+
+            expect(watches.map((watch) => watch.target)).toEqual([shop]);
+            expect(stderr.join('')).toContain(`watching ${shop} for changes`);
+            expect(updates).toEqual([]);
+
+            watches[0]?.trigger();
+            await vi.waitFor(() => expect(updates).toHaveLength(1));
+
+            expect(updates[0]?.nodes.map((node) => node.name)).toContain('Order');
+            expect(stderr.join('')).toContain('reloaded 4 schemas');
+        });
+
+        it('keeps the previous diagram when a reload fails', async () => {
+            let extractions = 0;
+            const real = createDefaultDependencies().extractSchemaGraph;
+            const { done, watches, updates, stderr } = runWith(
+                {
+                    extractSchemaGraph: {
+                        execute: async (target, options) => {
+                            extractions += 1;
+                            if (extractions > 1) {
+                                throw new Error(`Target not found: ${target}`);
+                            }
+                            return real.execute(target, options);
+                        },
+                    },
+                },
+                shop,
+            );
+            await done;
+
+            watches[0]?.trigger();
+            await vi.waitFor(() => expect(stderr.join('')).toContain('keeping the previous diagram'));
+
+            expect(stderr.join('')).toContain('warning: Target not found');
+            expect(updates).toEqual([]);
+        });
+
+        it('does not watch with --no-watch', async () => {
+            const { done, watches } = run(shop, '--no-watch');
+            await done;
+
+            expect(watches).toEqual([]);
+        });
+
+        it('does not watch the text formats, which run once', async () => {
+            const { done, watches } = run(shop, '--format', 'mermaid');
+            await done;
+
+            expect(watches).toEqual([]);
         });
     });
 

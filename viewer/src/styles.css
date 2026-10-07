@@ -89,6 +89,12 @@ body {
     font-size: 13px;
 }
 
+.sidebar__updated {
+    margin: 0;
+    color: var(--accent);
+    font-size: 12px;
+}
+
 .sidebar__search {
     width: 100%;
     padding: 8px 10px;

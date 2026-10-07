@@ -44,6 +44,7 @@ zodiac ./src/schemas --format mermaid --output docs/schemas.mmd
 | `-p, --port <port>`     | Port of the viewer. Default: the first free port from 4000               |
 | `--no-open`             | Do not open the viewer in the browser                                    |
 | `--no-inferred-relations` | Do not link fields such as `shopId` to the `Shop` schema               |
+| `--no-watch`            | Do not reload the viewer when the schema files change                    |
 
 Warnings (files that fail to load) go to the standard error, so the standard output stays a valid
 diagram. The command exits with an error if the target does not exist or contains no schema.
@@ -67,6 +68,19 @@ its address and opens it in your browser. Stop it with `Ctrl+C`.
 - The sidebar filters schemas by name and by source file. Cards can be dragged; zoom and pan with
   the mouse, the controls or the minimap.
 - The theme follows your system (light or dark).
+
+#### Live reload
+
+While the viewer runs, Zodiac watches the schema files of the target. When one is added, modified or
+removed, the diagram updates within about a second, without losing your search, file filters or
+folded cards (the sidebar shows when it was last reloaded). Disable it with `--no-watch`.
+
+- A file that no longer loads (a syntax error, say) is reported in the terminal and left out; the
+  other schemas stay on screen. If nothing can be extracted at all, the previous diagram is kept.
+- Only the files of the target are watched, not the modules they import from elsewhere: edit one
+  of the target's files, or restart, after changing a shared module.
+- Files are polled once per second rather than watched with the operating system's notifications,
+  so it behaves the same everywhere and never descends into `node_modules`.
 
 ### Mermaid output
 
@@ -167,4 +181,5 @@ commit directly on `main` or `develop`. Commits follow
 - [x] Mermaid export and CLI command
 - [x] Interactive web viewer
 - [x] Inferred relations (`shopId` -> `Shop`)
-- [ ] Source comments, watch mode (reload the viewer when schemas change)
+- [x] Watch mode (reload the viewer when schemas change)
+- [ ] Source comments

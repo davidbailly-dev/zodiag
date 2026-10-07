@@ -10,3 +10,11 @@ export async function fetchGraph(): Promise<GraphData> {
     }
     return (await response.json()) as GraphData;
 }
+
+// Calls `onChange` each time the server announces that the schemas changed. The browser reconnects
+// by itself if the connection is lost. Returns a function that stops listening.
+export function subscribeToChanges(onChange: () => void): () => void {
+    const events = new EventSource('/events');
+    events.addEventListener('graph', onChange);
+    return () => events.close();
+}

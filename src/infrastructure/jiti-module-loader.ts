@@ -1,27 +1,22 @@
-import { readdir, stat } from 'node:fs/promises';
 import path from 'node:path';
 import { createJiti } from 'jiti';
 import type { LoadedModule, LoadFailure, LoadResult, ModuleLoader } from '../application/ports/module-loader.js';
-
-const SOURCE_EXTENSIONS = new Set(['.ts', '.mts', '.cts']);
-const IGNORED_SUFFIXES = ['.d.ts', '.test.ts', '.spec.ts'];
+import { resolveSourceFiles, toPosix } from './source-files.js';
 
 // Loads TypeScript modules at runtime with jiti, so the analyzed project does not need to be built.
-// A directory is walked recursively; a file is loaded on its own.
+// A directory is walked recursively; a file is loaded on its own. Every call starts from a fresh
+// module cache, so a modified file is read again.
 export class JitiModuleLoader implements ModuleLoader {
     async load(target: string): Promise<LoadResult> {
-        const absoluteTarget = path.resolve(target);
-        const info = await stat(absoluteTarget).catch(() => undefined);
-        if (info === undefined) {
-            throw new Error(`Target not found: ${target}`);
-        }
-
-        const root = info.isDirectory() ? absoluteTarget : path.dirname(absoluteTarget);
-        const files = info.isDirectory() ? sortFiles(await collectFiles(absoluteTarget), root) : [absoluteTarget];
+        const { root, files } = await resolveSourceFiles(target);
 
         // The module cache must stay enabled: a schema imported by several files has to be the same
         // instance everywhere, because references between schemas are detected by identity.
         const jiti = createJiti(import.meta.url, { fsCache: false });
+        // ...but jiti stores modules in the cache of Node itself, which outlives this call and would
+        // serve a file as it was on a previous load. Forget the analyzed project's modules first;
+        // dependencies in node_modules do not change and stay cached.
+        forgetProjectModules(jiti.cache);
         const modules: LoadedModule[] = [];
         const failures: LoadFailure[] = [];
 
@@ -38,42 +33,11 @@ export class JitiModuleLoader implements ModuleLoader {
     }
 }
 
-async function collectFiles(directory: string): Promise<string[]> {
-    const entries = await readdir(directory, { withFileTypes: true });
-    const files: string[] = [];
-    for (const entry of entries) {
-        if (entry.name === 'node_modules' || entry.name.startsWith('.')) {
-            continue;
-        }
-        const entryPath = path.join(directory, entry.name);
-        if (entry.isDirectory()) {
-            files.push(...(await collectFiles(entryPath)));
-        } else if (isSourceFile(entry.name)) {
-            files.push(entryPath);
+function forgetProjectModules(cache: Record<string, unknown>): void {
+    const dependencies = `${path.sep}node_modules${path.sep}`;
+    for (const key of Object.keys(cache)) {
+        if (!key.includes(dependencies)) {
+            delete cache[key];
         }
     }
-    return files;
-}
-
-function isSourceFile(fileName: string): boolean {
-    return (
-        SOURCE_EXTENSIONS.has(path.extname(fileName)) &&
-        !IGNORED_SUFFIXES.some((suffix) => fileName.endsWith(suffix))
-    );
-}
-
-// Alphabetical order, with barrel files (`index.ts`) last so that a schema re-exported by a barrel
-// is attributed to the file that defines it.
-function sortFiles(files: string[], root: string): string[] {
-    const isBarrel = (file: string): boolean => path.basename(file, path.extname(file)) === 'index';
-    return [...files].sort((a, b) => {
-        if (isBarrel(a) !== isBarrel(b)) {
-            return isBarrel(a) ? 1 : -1;
-        }
-        return toPosix(path.relative(root, a)).localeCompare(toPosix(path.relative(root, b)));
-    });
-}
-
-function toPosix(filePath: string): string {
-    return filePath.split(path.sep).join('/');
 }
