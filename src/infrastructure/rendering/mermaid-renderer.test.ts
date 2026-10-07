@@ -77,6 +77,15 @@ describe('MermaidRenderer', () => {
         expect(output).toContain('Order ||--o{ Shop : "shops"');
     });
 
+    it('draws inferred relations with a dashed line', () => {
+        const graph = SchemaGraph.create([
+            objectNode('Shop', [field('id', string)]),
+            objectNode('Order', [field('shopId', string)]),
+        ]).withInferredRelations();
+
+        expect(new MermaidRenderer().render(graph)).toContain('Order ||..|| Shop : "shopId"');
+    });
+
     it('flattens complex types into valid Mermaid attribute types', () => {
         const output = render([
             objectNode('Mixed', [

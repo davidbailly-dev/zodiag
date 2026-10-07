@@ -29,8 +29,10 @@ export class MermaidRenderer implements GraphRenderer {
         }
         for (const relation of graph.relations) {
             const symbol = CARDINALITY_SYMBOLS[relation.cardinality];
+            // A dashed line (non-identifying relationship) tells an inferred link from an explicit one.
+            const line = relation.kind === 'inferred' ? '..' : '--';
             lines.push(
-                `    ${toIdentifier(relation.source)} ||--${symbol} ${toIdentifier(relation.target)} : "${relation.fieldName}"`,
+                `    ${toIdentifier(relation.source)} ||${line}${symbol} ${toIdentifier(relation.target)} : "${relation.fieldName}"`,
             );
         }
         return `${lines.join('\n')}\n`;

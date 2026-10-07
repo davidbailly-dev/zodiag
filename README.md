@@ -43,6 +43,7 @@ zodiac ./src/schemas --format mermaid --output docs/schemas.mmd
 | `-o, --output <file>`   | Write a text format to a file instead of the stdout (not for the viewer) |
 | `-p, --port <port>`     | Port of the viewer. Default: the first free port from 4000               |
 | `--no-open`             | Do not open the viewer in the browser                                    |
+| `--no-inferred-relations` | Do not link fields such as `shopId` to the `Shop` schema               |
 
 Warnings (files that fail to load) go to the standard error, so the standard output stays a valid
 diagram. The command exits with an error if the target does not exist or contains no schema.
@@ -55,7 +56,8 @@ its address and opens it in your browser. Stop it with `Ctrl+C`.
 - Each object schema is a card listing its fields, their types, `?` for optional fields and their
   constraints. Enum fields are shown in orange: hover one to see its values.
 - Relations are arrows starting from the field that holds them, labelled with their multiplicity
-  (`1`, `0..1`, `0..*`).
+  (`1`, `0..1`, `0..*`). Dashed arrows are [inferred relations](#inferred-relations); a checkbox in
+  the sidebar shows or hides them.
 - Click a schema to highlight its links and fade the rest; click the background to reset.
 - The sidebar filters schemas by name and by source file. Cards can be dragged; zoom and pan with
   the mouse, the controls or the minimap.
@@ -73,7 +75,7 @@ the [Mermaid Live Editor](https://mermaid.live).
   (`one of: completed | abandoned | refunded`).
 - Complex types are flattened to what Mermaid accepts (`string | number` becomes `string_or_number`).
 - A relation reads "a source has one / zero or one / zero or more targets":
-  `Order ||--o{ OrderLine : "lines"`.
+  `Order ||--o{ OrderLine : "lines"`. Inferred relations use a dashed line: `Order ||..|| Shop : "shopId"`.
 
 ## How it works
 
@@ -97,7 +99,22 @@ What the extraction understands:
 - Node names drop the `Schema` suffix (`ShopSchema` becomes `Shop`); on a name collision between two
   files the file name is prepended (`item.Item`).
 
-Not supported yet: implicit relations such as `shopId` -> `Shop`, source comments, `export default`.
+Not supported yet: source comments and `export default`.
+
+### Inferred relations
+
+Zod cannot express foreign keys, so `shopId: z.string()` is just a string. Zodiac guesses the link
+when all of these hold, and draws it as a dashed relation (disable it with `--no-inferred-relations`):
+
+- the field holds a plain identifier: a `string` or a `number` (`shopIds: z.array(z.string())` is a
+  list of identifiers and points to many);
+- its name is a schema name followed by `Id` or `_id` (`shopId`, `order_line_id` -> `OrderLine`),
+  ignoring case and underscores;
+- that name designates exactly one object schema, other than the one holding the field (a name that
+  matches several schemas is left alone). Enums are never targets.
+
+Optional and nullable identifiers give a `0..1` relation. A plain `id` field, or a name such as
+`userId` with no `User` schema, creates nothing.
 
 > **Note:** analyzing a file executes it (imports run their top-level code). Only point Zodiac at
 > code you trust. Files that fail to load are reported and skipped.
@@ -144,5 +161,5 @@ commit directly on `main` or `develop`. Commits follow
 - [x] Domain model and Zod v4 extractor
 - [x] Mermaid export and CLI command
 - [x] Interactive web viewer
-- [ ] Source comments, watch mode (reload the viewer when schemas change), inferred relations
-  (`shopId` -> `Shop`)
+- [x] Inferred relations (`shopId` -> `Shop`)
+- [ ] Source comments, watch mode (reload the viewer when schemas change)

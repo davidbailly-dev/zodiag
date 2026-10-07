@@ -29,9 +29,9 @@ describe('SchemaGraph', () => {
         ]);
 
         expect(graph.relations).toEqual([
-            { source: 'Order', target: 'Shop', fieldName: 'shop', cardinality: 'one' },
-            { source: 'Order', target: 'Shop', fieldName: 'referrer', cardinality: 'zero-or-one' },
-            { source: 'Order', target: 'OrderLine', fieldName: 'lines', cardinality: 'many' },
+            { source: 'Order', target: 'Shop', fieldName: 'shop', kind: 'explicit', cardinality: 'one' },
+            { source: 'Order', target: 'Shop', fieldName: 'referrer', kind: 'explicit', cardinality: 'zero-or-one' },
+            { source: 'Order', target: 'OrderLine', fieldName: 'lines', kind: 'explicit', cardinality: 'many' },
         ]);
     });
 
@@ -61,7 +61,7 @@ describe('SchemaGraph', () => {
         ]);
 
         expect(graph.relations).toEqual([
-            { source: 'Category', target: 'Category', fieldName: 'children', cardinality: 'many' },
+            { source: 'Category', target: 'Category', fieldName: 'children', kind: 'explicit', cardinality: 'many' },
         ]);
     });
 

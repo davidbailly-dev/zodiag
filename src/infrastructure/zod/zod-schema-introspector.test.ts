@@ -60,8 +60,8 @@ describe('ZodSchemaIntrospector', () => {
         ]);
         expect(fieldOf(order, 'lines').constraints).toEqual(['min 1']);
         expect(graph.relations).toEqual([
-            { source: 'Order', target: 'Shop', fieldName: 'shop', cardinality: 'one' },
-            { source: 'Order', target: 'OrderLine', fieldName: 'lines', cardinality: 'many' },
+            { source: 'Order', target: 'Shop', fieldName: 'shop', kind: 'explicit', cardinality: 'one' },
+            { source: 'Order', target: 'OrderLine', fieldName: 'lines', kind: 'explicit', cardinality: 'many' },
         ]);
     });
 
@@ -106,7 +106,7 @@ describe('ZodSchemaIntrospector', () => {
         const graph = introspect({ ShopSchema, OrderSchema });
 
         expect(graph.relations).toEqual([
-            { source: 'Order', target: 'Shop', fieldName: 'shop', cardinality: 'zero-or-one' },
+            { source: 'Order', target: 'Shop', fieldName: 'shop', kind: 'explicit', cardinality: 'zero-or-one' },
         ]);
     });
 
@@ -198,7 +198,7 @@ describe('ZodSchemaIntrospector', () => {
             source: 'Category',
             target: 'Category',
             fieldName: 'children',
-            cardinality: 'many',
+            kind: 'explicit', cardinality: 'many',
         });
     });
 
@@ -252,7 +252,7 @@ describe('ZodSchemaIntrospector', () => {
         ]);
 
         expect(graph.relations).toEqual([
-            { source: 'Order', target: 'Shop', fieldName: 'shop', cardinality: 'one' },
+            { source: 'Order', target: 'Shop', fieldName: 'shop', kind: 'explicit', cardinality: 'one' },
         ]);
     });
 });

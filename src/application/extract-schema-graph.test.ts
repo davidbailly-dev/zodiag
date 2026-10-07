@@ -1,10 +1,34 @@
 import { describe, expect, it } from 'vitest';
 import { SchemaGraph } from '../domain/index.js';
+import type { Field } from '../domain/index.js';
 import { ExtractSchemaGraph } from './extract-schema-graph.js';
 import type { LoadedModule, ModuleLoader } from './ports/module-loader.js';
 import type { SchemaIntrospector } from './ports/schema-introspector.js';
 
 describe('ExtractSchemaGraph', () => {
+    it('adds the inferred relations only when asked to', async () => {
+        const field = (name: string): Field => ({
+            name,
+            type: { kind: 'primitive', name: 'string' },
+            optional: false,
+            nullable: false,
+            constraints: [],
+        });
+        const graph = SchemaGraph.create([
+            { kind: 'object', name: 'Shop', source: 'schemas.ts', fields: [field('id')] },
+            { kind: 'object', name: 'Order', source: 'schemas.ts', fields: [field('shopId')] },
+        ]);
+        const extract = new ExtractSchemaGraph(
+            { load: async () => ({ modules: [], failures: [] }) },
+            { introspect: () => graph },
+        );
+
+        expect((await extract.execute('./schemas')).graph.relations).toEqual([]);
+        expect((await extract.execute('./schemas', { inferRelations: false })).graph.relations).toEqual([]);
+        const inferred = (await extract.execute('./schemas', { inferRelations: true })).graph.relations;
+        expect(inferred.map((relation) => [relation.fieldName, relation.kind])).toEqual([['shopId', 'inferred']]);
+    });
+
     it('introspects the loaded modules and reports the load failures', async () => {
         const modules: LoadedModule[] = [{ filePath: 'shop.ts', exports: {} }];
         const failures = [{ filePath: 'broken.ts', message: 'boom' }];

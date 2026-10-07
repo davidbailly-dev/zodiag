@@ -22,7 +22,7 @@ const relation = (source: string, target: string): Relation => ({
     source,
     target,
     fieldName: 'link',
-    cardinality: 'many',
+    kind: 'explicit', cardinality: 'many',
 });
 
 describe('computeLayout', () => {

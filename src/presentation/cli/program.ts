@@ -1,12 +1,12 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { Command, InvalidArgumentError, Option } from 'commander';
-import type { ExtractionResult } from '../../application/extract-schema-graph.js';
+import type { ExtractionOptions, ExtractionResult } from '../../application/extract-schema-graph.js';
 import type { GraphRenderer } from '../../application/ports/graph-renderer.js';
 import type { ViewerLauncher } from '../../application/ports/viewer-launcher.js';
 
 export interface CliDependencies {
-    readonly extractSchemaGraph: { execute(target: string): Promise<ExtractionResult> };
+    readonly extractSchemaGraph: { execute(target: string, options?: ExtractionOptions): Promise<ExtractionResult> };
     // Text formats, by name. The interactive viewer is handled separately because it keeps running.
     readonly renderers: Readonly<Record<string, GraphRenderer>>;
     readonly viewerLauncher: ViewerLauncher;
@@ -21,6 +21,7 @@ interface CliOptions {
     output?: string;
     port?: number;
     open: boolean;
+    inferredRelations: boolean;
 }
 
 const VIEWER_FORMAT = 'viewer';
@@ -42,6 +43,7 @@ export function createProgram(dependencies: CliDependencies): Command {
         .option('-o, --output <file>', 'write a text format to a file instead of the standard output')
         .option('-p, --port <port>', 'port of the viewer (default: first free port from 4000)', parsePort)
         .option('--no-open', 'do not open the viewer in the browser')
+        .option('--no-inferred-relations', 'do not link fields such as shopId to the Shop schema')
         .action(async (target: string, options: CliOptions) => {
             const isViewer = options.format === VIEWER_FORMAT;
             const renderer = renderers[options.format];
@@ -52,7 +54,7 @@ export function createProgram(dependencies: CliDependencies): Command {
                 throw new Error(`Unsupported format "${options.format}"`);
             }
 
-            const { graph, failures } = await extractSchemaGraph.execute(target);
+            const { graph, failures } = await extractSchemaGraph.execute(target, { inferRelations: options.inferredRelations });
             for (const failure of failures) {
                 const reason = failure.message.split('\n')[0];
                 io.stderr(`warning: could not load ${failure.filePath}: ${reason}\n`);
