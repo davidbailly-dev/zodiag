@@ -6,8 +6,9 @@ Point Zodiac at a file or a folder of schemas (`order.ts`, `shop.ts`, `orderLine
 builds a graph of your schemas, their fields and the relations between them, shown in a local web
 viewer or exported as [Mermaid](https://mermaid.js.org).
 
-> **Status: work in progress.** Only the project setup is done. The features below marked as
-> *planned* are not implemented yet.
+> **Status: work in progress.** The schema extraction (domain model, Zod 4 reader, file loading)
+> works and is tested, but there is no CLI command, Mermaid export or viewer yet. The features
+> marked as *planned* are not implemented.
 
 ## Requirements
 
@@ -32,17 +33,31 @@ zodiac ./src/schemas
 zodiac ./src/schemas --format mermaid
 ```
 
-## How it works (planned)
+## How it works
 
 1. **Extraction**: the schema files are loaded at runtime with [jiti](https://github.com/unjs/jiti)
-   and the Zod objects are walked through their internal definition. Every exported schema is
-   registered by name, so a field pointing to another exported schema becomes a relation.
+   and the Zod objects are walked through their internal definition. Every exported object or enum
+   schema becomes a node, so a field pointing to another exported schema becomes a relation.
 2. **Model**: the result is a framework-agnostic `SchemaGraph` (nodes, fields, relations).
-3. **Rendering**: the graph is exported as Mermaid text or displayed in an interactive viewer
-   (React Flow).
+3. **Rendering** *(planned)*: the graph is exported as Mermaid text or displayed in an interactive
+   viewer (React Flow).
 
-Shared schemas such as enums are shown as field types, and aliases like `z.array(ShopSchema)` are
-resolved to `Shop[]` instead of becoming nodes.
+What the extraction understands:
+
+- Objects, enums, arrays, sets, tuples, records, unions, intersections, literals, nested objects and
+  recursive schemas (`z.lazy`, getters).
+- `optional`, `nullable`, `default` fields and their constraints (`>= 0`, `min 1`, `email`, `int`...).
+- Composition: spread shapes, `.extend()`, `.pick()`, `.omit()`...
+- `.describe()` descriptions.
+- Enums are shown as field types, not as relations. Other exported schemas such as
+  `z.array(ShopSchema)` are aliases, resolved to `Shop[]` where they are used instead of becoming nodes.
+- Node names drop the `Schema` suffix (`ShopSchema` becomes `Shop`); on a name collision between two
+  files the file name is prepended (`item.Item`).
+
+Not supported yet: implicit relations such as `shopId` -> `Shop`, source comments, `export default`.
+
+> **Note:** analyzing a file executes it (imports run their top-level code). Only point Zodiac at
+> code you trust. Files that fail to load are reported and skipped.
 
 ## Architecture
 
@@ -50,11 +65,14 @@ Domain-Driven Design, dependencies pointing towards the domain:
 
 ```
 src/
-  domain/          pure model (SchemaGraph, SchemaNode, Field, Relation)
-  application/     use cases
-  infrastructure/  adapters (Zod v4 extraction, file loading, rendering)
+  domain/          pure model (SchemaGraph, SchemaNode, Field, Relation, TypeExpression)
+  application/     use case (ExtractSchemaGraph) and ports (ModuleLoader, SchemaIntrospector)
+  infrastructure/  adapters (jiti module loader, Zod v4 introspection)
   presentation/    CLI and viewer
 ```
+
+The domain knows nothing about Zod: the Zod adapter recognizes schemas by their internal shape
+rather than with `instanceof`, because the analyzed project ships its own copy of Zod.
 
 ## Scripts
 
@@ -75,7 +93,7 @@ commit directly on `main` or `develop`. Commits follow
 ## Roadmap
 
 - [x] Project setup
-- [ ] Domain model and Zod v4 extractor
+- [x] Domain model and Zod v4 extractor
 - [ ] Mermaid export and CLI command
 - [ ] Interactive web viewer
 - [ ] Source comments, watch mode, inferred relations (`shopId` -> `Shop`)
