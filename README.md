@@ -11,7 +11,7 @@ viewer or exported as [Mermaid](https://mermaid.js.org).
 
 ## Requirements
 
-- Node.js >= 20
+- Node.js >= 20.11
 - Zod `^4.0.0` in the analyzed project (developed against 4.6.4)
 
 ## Getting started
@@ -23,6 +23,10 @@ node dist/presentation/cli/main.js ./path/to/schemas
 ```
 
 To get the `zodiac` command on your path while developing, run `npm link` after the build.
+
+`npm pack` builds the project and produces an installable tarball (`zodiac-<version>.tgz`) that
+contains the CLI and the viewer; installing it gives the `zodiac` command. Releases are described in
+the [changelog](CHANGELOG.md).
 
 ## Usage
 
