@@ -38,7 +38,7 @@ describe('JitiModuleLoader', () => {
     });
 
     it('reads a modified file again on the next load, even one imported by another file', async () => {
-        const directory = await mkdtemp(path.join(os.tmpdir(), 'zodiac-reload-'));
+        const directory = await mkdtemp(path.join(os.tmpdir(), 'zodiag-reload-'));
         try {
             await writeFile(path.join(directory, 'shared.ts'), 'export const shared = 1;');
             await writeFile(path.join(directory, 'main.ts'), "import { shared } from './shared';\nexport const value = shared;");

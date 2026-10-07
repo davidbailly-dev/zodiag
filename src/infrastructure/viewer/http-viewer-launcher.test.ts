@@ -23,11 +23,11 @@ let secretDirectory: string;
 const running: RunningViewer[] = [];
 
 beforeEach(async () => {
-    const root = await mkdtemp(path.join(os.tmpdir(), 'zodiac-viewer-'));
+    const root = await mkdtemp(path.join(os.tmpdir(), 'zodiag-viewer-'));
     assetsDirectory = path.join(root, 'viewer');
     secretDirectory = root;
     await mkdir(path.join(assetsDirectory, 'assets'), { recursive: true });
-    await writeFile(path.join(assetsDirectory, 'index.html'), '<!doctype html><title>Zodiac</title>');
+    await writeFile(path.join(assetsDirectory, 'index.html'), '<!doctype html><title>Zodiag</title>');
     await writeFile(path.join(assetsDirectory, 'assets', 'app.js'), 'console.log("app")');
     await writeFile(path.join(root, 'secret.txt'), 'top secret');
 });
@@ -87,7 +87,7 @@ describe('HttpViewerLauncher', () => {
         const page = await fetch(url);
         expect(page.status).toBe(200);
         expect(page.headers.get('content-type')).toBe('text/html; charset=utf-8');
-        expect(await page.text()).toContain('<title>Zodiac</title>');
+        expect(await page.text()).toContain('<title>Zodiag</title>');
 
         const script = await fetch(`${url}/assets/app.js`);
         expect(script.headers.get('content-type')).toBe('text/javascript; charset=utf-8');

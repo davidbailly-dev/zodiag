@@ -47,7 +47,7 @@ function runWith(overrides: Partial<CliDependencies>, ...args: string[]) {
         ...overrides,
     });
     program.exitOverride().configureOutput({ writeOut: () => undefined, writeErr: () => undefined });
-    const done = program.parseAsync(['node', 'zodiac', ...args]);
+    const done = program.parseAsync(['node', 'zodiag', ...args]);
     return { done, stdout, stderr, launches, updates, watches };
 }
 
@@ -55,11 +55,11 @@ function run(...args: string[]) {
     return runWith({}, ...args);
 }
 
-describe('zodiac command', () => {
+describe('zodiag command', () => {
     const shop = path.join(fixtures, 'shop');
 
-    it('exposes the zodiac command name', () => {
-        expect(createProgram(createDefaultDependencies()).name()).toBe('zodiac');
+    it('exposes the zodiag command name', () => {
+        expect(createProgram(createDefaultDependencies()).name()).toBe('zodiag');
     });
 
     it('prints the version of package.json', async () => {
@@ -69,7 +69,7 @@ describe('zodiac command', () => {
         const program = createProgram(createDefaultDependencies());
         program.exitOverride().configureOutput({ writeOut: (text) => printed.push(text), writeErr: () => undefined });
 
-        await expect(program.parseAsync(['node', 'zodiac', '--version'])).rejects.toMatchObject({
+        await expect(program.parseAsync(['node', 'zodiag', '--version'])).rejects.toMatchObject({
             code: 'commander.version',
         });
 
@@ -86,7 +86,7 @@ describe('zodiac command', () => {
             expect(launches[0]?.graph.nodes.map((node) => node.name)).toContain('Order');
             expect(launches[0]?.options).toEqual({ open: true });
             expect(stdout).toEqual([]);
-            expect(stderr.join('')).toContain('zodiac viewer running at http://127.0.0.1:4000');
+            expect(stderr.join('')).toContain('zodiag viewer running at http://127.0.0.1:4000');
         });
 
         it('forwards --port and --no-open', async () => {
@@ -200,7 +200,7 @@ describe('zodiac command', () => {
         });
 
         it('writes the diagram to a file with --output', async () => {
-            const directory = await mkdtemp(path.join(os.tmpdir(), 'zodiac-'));
+            const directory = await mkdtemp(path.join(os.tmpdir(), 'zodiag-'));
             temporaryDirectories.push(directory);
             const file = path.join(directory, 'nested', 'diagram.mmd');
 

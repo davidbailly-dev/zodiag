@@ -1,11 +1,11 @@
 {
-    "name": "zodiac",
+    "name": "zodiag",
     "version": "0.1.0",
     "description": "Visualize Zod schemas as diagrams",
     "private": true,
     "type": "module",
     "bin": {
-        "zodiac": "./dist/presentation/cli/main.js"
+        "zodiag": "./dist/presentation/cli/main.js"
     },
     "files": [
         "dist"

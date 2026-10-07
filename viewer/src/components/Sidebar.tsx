@@ -27,7 +27,7 @@ export function Sidebar(props: SidebarProps) {
 
     return (
         <aside className="sidebar">
-            <h1 className="sidebar__title">Zodiac</h1>
+            <h1 className="sidebar__title">Zodiag</h1>
             <p className="sidebar__summary">
                 {visibleCount} / {entities.length} schemas · {relationCount} relations
             </p>
