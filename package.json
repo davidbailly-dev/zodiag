@@ -11,16 +11,22 @@
         "dist"
     ],
     "engines": {
-        "node": ">=20"
+        "node": ">=20.11"
     },
     "scripts": {
         "build": "tsc -p tsconfig.build.json && vite build",
+        "prepack": "npm run build",
         "typecheck": "tsc --noEmit && tsc -p viewer/tsconfig.json",
         "test": "vitest run",
         "test:watch": "vitest"
     },
     "peerDependencies": {
         "zod": "^4.0.0"
+    },
+    "peerDependenciesMeta": {
+        "zod": {
+            "optional": true
+        }
     },
     "dependencies": {
         "commander": "^15.0.0",

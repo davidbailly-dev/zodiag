@@ -9,6 +9,7 @@ import type { ViewerLauncher } from '../../application/ports/viewer-launcher.js'
 import { WatchSchemaGraph } from '../../application/watch-schema-graph.js';
 
 export interface CliDependencies {
+    readonly version: string;
     readonly extractSchemaGraph: { execute(target: string, options?: ExtractionOptions): Promise<ExtractionResult> };
     // Text formats, by name. The interactive viewer is handled separately because it keeps running.
     readonly renderers: Readonly<Record<string, GraphRenderer>>;
@@ -32,13 +33,13 @@ interface CliOptions {
 const VIEWER_FORMAT = 'viewer';
 
 export function createProgram(dependencies: CliDependencies): Command {
-    const { extractSchemaGraph, renderers, viewerLauncher, changeWatcher, io } = dependencies;
+    const { version, extractSchemaGraph, renderers, viewerLauncher, changeWatcher, io } = dependencies;
     const program = new Command();
 
     program
         .name('zodiac')
         .description('Visualize Zod schemas as diagrams')
-        .version('0.1.0')
+        .version(version)
         .argument('<target>', 'a file or a directory containing Zod schemas')
         .addOption(
             new Option('-f, --format <format>', 'output format')

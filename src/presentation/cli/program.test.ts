@@ -62,6 +62,21 @@ describe('zodiac command', () => {
         expect(createProgram(createDefaultDependencies()).name()).toBe('zodiac');
     });
 
+    it('prints the version of package.json', async () => {
+        const manifest = path.resolve(import.meta.dirname, '../../../package.json');
+        const { version } = JSON.parse(await readFile(manifest, 'utf8')) as { version: string };
+        const printed: string[] = [];
+        const program = createProgram(createDefaultDependencies());
+        program.exitOverride().configureOutput({ writeOut: (text) => printed.push(text), writeErr: () => undefined });
+
+        await expect(program.parseAsync(['node', 'zodiac', '--version'])).rejects.toMatchObject({
+            code: 'commander.version',
+        });
+
+        expect(version).toMatch(/^\d+\.\d+\.\d+/);
+        expect(printed.join('').trim()).toBe(version);
+    });
+
     describe('viewer (default format)', () => {
         it('launches the viewer with the extracted graph and opens the browser', async () => {
             const { done, launches, stdout, stderr } = run(shop);
