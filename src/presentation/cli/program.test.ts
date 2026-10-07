@@ -2,6 +2,8 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
+import type { ViewerLauncher, ViewerOptions } from '../../application/ports/viewer-launcher.js';
+import type { SchemaGraph } from '../../domain/index.js';
 import { createDefaultDependencies } from './composition.js';
 import { createProgram } from './program.js';
 
@@ -15,61 +17,107 @@ afterEach(async () => {
 function run(...args: string[]) {
     const stdout: string[] = [];
     const stderr: string[] = [];
+    const launches: { graph: SchemaGraph; options: ViewerOptions }[] = [];
+    const viewerLauncher: ViewerLauncher = {
+        launch: async (graph, options) => {
+            launches.push({ graph, options });
+            return { url: 'http://127.0.0.1:4000', close: async () => undefined };
+        },
+    };
     const program = createProgram({
         ...createDefaultDependencies(),
+        viewerLauncher,
         io: { stdout: (text) => stdout.push(text), stderr: (text) => stderr.push(text) },
     });
     program.exitOverride().configureOutput({ writeOut: () => undefined, writeErr: () => undefined });
     const done = program.parseAsync(['node', 'zodiac', ...args]);
-    return { done, stdout, stderr };
+    return { done, stdout, stderr, launches };
 }
 
 describe('zodiac command', () => {
+    const shop = path.join(fixtures, 'shop');
+
     it('exposes the zodiac command name', () => {
         expect(createProgram(createDefaultDependencies()).name()).toBe('zodiac');
     });
 
-    it('prints a Mermaid diagram of a directory by default', async () => {
-        const { done, stdout, stderr } = run(path.join(fixtures, 'shop'));
-        await done;
+    describe('viewer (default format)', () => {
+        it('launches the viewer with the extracted graph and opens the browser', async () => {
+            const { done, launches, stdout, stderr } = run(shop);
+            await done;
 
-        const output = stdout.join('');
-        expect(output.startsWith('erDiagram\n')).toBe(true);
-        expect(output).toContain('Order ||--o{ OrderLine : "lines"');
-        expect(output).toContain('Order ||--|| Shop : "shop"');
-        expect(stderr).toEqual([]);
+            expect(launches).toHaveLength(1);
+            expect(launches[0]?.graph.nodes.map((node) => node.name)).toContain('Order');
+            expect(launches[0]?.options).toEqual({ open: true });
+            expect(stdout).toEqual([]);
+            expect(stderr.join('')).toContain('zodiac viewer running at http://127.0.0.1:4000');
+        });
+
+        it('forwards --port and --no-open', async () => {
+            const { done, launches } = run(shop, '--port', '5000', '--no-open');
+            await done;
+
+            expect(launches[0]?.options).toEqual({ port: 5000, open: false });
+        });
+
+        it.each(['abc', '-1', '70000', '12.5'])('rejects the invalid port %s', async (port) => {
+            await expect(run(shop, `--port=${port}`).done).rejects.toThrow(/port/i);
+        });
+
+        it('rejects --output, which only applies to text formats', async () => {
+            const { done, launches } = run(shop, '--output', 'diagram.mmd');
+
+            await expect(done).rejects.toThrow('--output is not supported by the viewer');
+            expect(launches).toEqual([]);
+        });
     });
 
-    it('writes the diagram to a file with --output', async () => {
-        const directory = await mkdtemp(path.join(os.tmpdir(), 'zodiac-'));
-        temporaryDirectories.push(directory);
-        const file = path.join(directory, 'nested', 'diagram.mmd');
+    describe('mermaid format', () => {
+        it('prints a Mermaid diagram without launching the viewer', async () => {
+            const { done, stdout, stderr, launches } = run(shop, '--format', 'mermaid');
+            await done;
 
-        const { done, stdout, stderr } = run(path.join(fixtures, 'shop'), '--output', file);
-        await done;
+            const output = stdout.join('');
+            expect(output.startsWith('erDiagram\n')).toBe(true);
+            expect(output).toContain('Order ||--o{ OrderLine : "lines"');
+            expect(output).toContain('Order ||--|| Shop : "shop"');
+            expect(stderr).toEqual([]);
+            expect(launches).toEqual([]);
+        });
 
-        expect(await readFile(file, 'utf8')).toContain('erDiagram');
-        expect(stdout).toEqual([]);
-        expect(stderr.join('')).toContain(`written to ${file}`);
+        it('writes the diagram to a file with --output', async () => {
+            const directory = await mkdtemp(path.join(os.tmpdir(), 'zodiac-'));
+            temporaryDirectories.push(directory);
+            const file = path.join(directory, 'nested', 'diagram.mmd');
+
+            const { done, stdout, stderr } = run(shop, '-f', 'mermaid', '--output', file);
+            await done;
+
+            expect(await readFile(file, 'utf8')).toContain('erDiagram');
+            expect(stdout).toEqual([]);
+            expect(stderr.join('')).toContain(`written to ${file}`);
+        });
     });
 
-    it('warns about files that cannot be loaded and still renders the others', async () => {
-        const { done, stdout, stderr } = run(path.join(fixtures, 'broken'));
-        await done;
+    describe('errors', () => {
+        it('warns about files that cannot be loaded and still renders the others', async () => {
+            const { done, stdout, stderr } = run(path.join(fixtures, 'broken'), '-f', 'mermaid');
+            await done;
 
-        expect(stderr.join('')).toContain('warning: could not load broken.ts: Cannot load this module');
-        expect(stdout.join('')).toContain('Valid {');
-    });
+            expect(stderr.join('')).toContain('warning: could not load broken.ts: Cannot load this module');
+            expect(stdout.join('')).toContain('Valid {');
+        });
 
-    it('fails when no schema is found', async () => {
-        await expect(run(path.join(fixtures, 'empty')).done).rejects.toThrow('No Zod object or enum schema found');
-    });
+        it('fails when no schema is found', async () => {
+            await expect(run(path.join(fixtures, 'empty')).done).rejects.toThrow('No Zod object or enum schema found');
+        });
 
-    it('fails when the target does not exist', async () => {
-        await expect(run(path.join(fixtures, 'missing')).done).rejects.toThrow('Target not found');
-    });
+        it('fails when the target does not exist', async () => {
+            await expect(run(path.join(fixtures, 'missing')).done).rejects.toThrow('Target not found');
+        });
 
-    it('rejects an unknown format', async () => {
-        await expect(run(path.join(fixtures, 'shop'), '--format', 'png').done).rejects.toThrow(/png/);
+        it('rejects an unknown format', async () => {
+            await expect(run(shop, '--format', 'png').done).rejects.toThrow(/png/);
+        });
     });
 });
