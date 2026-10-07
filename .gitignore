@@ -5,3 +5,7 @@ coverage/
 .env
 .env.*
 .DS_Store
+
+# Local AI instructions (personal, not versioned)
+CLAUDE.md
+.claude/
