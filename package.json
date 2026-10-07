@@ -1,0 +1,35 @@
+{
+    "name": "zodiac",
+    "version": "0.1.0",
+    "description": "Visualize Zod schemas as diagrams",
+    "private": true,
+    "type": "module",
+    "bin": {
+        "zodiac": "./dist/presentation/cli/main.js"
+    },
+    "files": [
+        "dist"
+    ],
+    "engines": {
+        "node": ">=20"
+    },
+    "scripts": {
+        "build": "tsc -p tsconfig.build.json",
+        "typecheck": "tsc --noEmit",
+        "test": "vitest run",
+        "test:watch": "vitest"
+    },
+    "peerDependencies": {
+        "zod": "^4.0.0"
+    },
+    "dependencies": {
+        "commander": "^15.0.0",
+        "jiti": "^2.7.0"
+    },
+    "devDependencies": {
+        "@types/node": "^26.6.4",
+        "typescript": "^7.0.2",
+        "vitest": "^5.0.3",
+        "zod": "^4.6.4"
+    }
+}
