@@ -1,18 +1,30 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Diagram } from './components/Diagram.js';
 import { Sidebar } from './components/Sidebar.js';
-import { fetchGraph } from './graph-data.js';
+import { fetchGraph, subscribeToChanges } from './graph-data.js';
 import type { GraphData } from './graph-data.js';
-import { initiallyCollapsed, sourceColors } from './flow/appearance.js';
+import { collapseNewcomers, initiallyCollapsed, sourceColors } from './flow/appearance.js';
 import { buildEntities } from './flow/model.js';
 
 export function App() {
     const [graph, setGraph] = useState<GraphData | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
 
     useEffect(() => {
         fetchGraph().then(setGraph, (reason: unknown) => {
             setError(reason instanceof Error ? reason.message : String(reason));
+        });
+        // When the schema files change the server says so: load the new graph and keep the current
+        // one if that fails.
+        return subscribeToChanges(() => {
+            fetchGraph().then(
+                (reloaded) => {
+                    setGraph(reloaded);
+                    setUpdatedAt(new Date());
+                },
+                () => undefined,
+            );
         });
     }, []);
 
@@ -22,10 +34,10 @@ export function App() {
     if (graph === null) {
         return <p className="status">Loading schemas…</p>;
     }
-    return <Viewer graph={graph} />;
+    return <Viewer graph={graph} updatedAt={updatedAt} />;
 }
 
-function Viewer({ graph }: { graph: GraphData }) {
+function Viewer({ graph, updatedAt }: { graph: GraphData; updatedAt: Date | null }) {
     const [showInferred, setShowInferred] = useState(true);
     const inferredCount = useMemo(
         () => graph.relations.filter((relation) => relation.kind === 'inferred').length,
@@ -40,6 +52,18 @@ function Viewer({ graph }: { graph: GraphData }) {
     const colors = useMemo(() => sourceColors(sources), [sources]);
     const entityNames = useMemo(() => entities.map((entity) => entity.name), [entities]);
     const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(() => initiallyCollapsed(entityNames));
+    // After a reload, only the cards that were not there before get the default folding.
+    const knownNames = useRef(new Set(entityNames));
+    useEffect(() => {
+        const newcomers = entityNames.filter((name) => !knownNames.current.has(name));
+        if (newcomers.length === 0) {
+            return;
+        }
+        for (const name of newcomers) {
+            knownNames.current.add(name);
+        }
+        setCollapsed((current) => collapseNewcomers(current, newcomers, entityNames.length));
+    }, [entityNames]);
     // Bumped by "collapse all" / "expand all" to fit the view again, since every card changes size.
     const [layoutVersion, setLayoutVersion] = useState(0);
     const toggleCollapse = useCallback((name: string) => {
@@ -88,6 +112,7 @@ function Viewer({ graph }: { graph: GraphData }) {
                 showInferred={showInferred}
                 onToggleInferred={() => setShowInferred((current) => !current)}
                 colors={colors}
+                updatedAt={updatedAt}
                 collapsedCount={entityNames.filter((name) => collapsed.has(name)).length}
                 onCollapseAll={() => setAllCollapsed(true)}
                 onExpandAll={() => setAllCollapsed(false)}

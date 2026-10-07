@@ -9,6 +9,8 @@ interface SidebarProps {
     relationCount: number;
     inferredCount: number;
     colors: ReadonlyMap<string, string>;
+    // When the schemas were last reloaded after a change in the files, if they ever were.
+    updatedAt: Date | null;
     collapsedCount: number;
     onCollapseAll(): void;
     onExpandAll(): void;
@@ -29,6 +31,11 @@ export function Sidebar(props: SidebarProps) {
             <p className="sidebar__summary">
                 {visibleCount} / {entities.length} schemas · {relationCount} relations
             </p>
+            {props.updatedAt !== null && (
+                <p className="sidebar__updated" role="status">
+                    Reloaded at {props.updatedAt.toLocaleTimeString()}
+                </p>
+            )}
 
             <input
                 className="sidebar__search"

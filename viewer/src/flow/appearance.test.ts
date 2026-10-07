@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AUTO_COLLAPSE_THRESHOLD, initiallyCollapsed, sourceColors } from './appearance.js';
+import { AUTO_COLLAPSE_THRESHOLD, collapseNewcomers, initiallyCollapsed, sourceColors } from './appearance.js';
 
 const names = (count: number) => Array.from({ length: count }, (_, index) => `Entity${index}`);
 
@@ -12,6 +12,18 @@ describe('initiallyCollapsed', () => {
         const all = names(AUTO_COLLAPSE_THRESHOLD + 1);
 
         expect([...initiallyCollapsed(all)]).toEqual(all);
+    });
+});
+
+describe('collapseNewcomers', () => {
+    it('collapses the new cards of a large graph and keeps the existing choices', () => {
+        const result = collapseNewcomers(new Set(['Old']), ['New'], AUTO_COLLAPSE_THRESHOLD + 1);
+
+        expect([...result].sort()).toEqual(['New', 'Old']);
+    });
+
+    it('leaves the new cards of a small graph expanded', () => {
+        expect([...collapseNewcomers(new Set(['Old']), ['New'], 3)]).toEqual(['Old']);
     });
 });
 

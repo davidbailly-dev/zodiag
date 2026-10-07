@@ -8,6 +8,15 @@ export function initiallyCollapsed(entityNames: readonly string[]): Set<string> 
     return new Set(entityNames.length > AUTO_COLLAPSE_THRESHOLD ? entityNames : []);
 }
 
+// Cards that appear after a reload follow the same rule as the first display: collapsed on a large graph.
+export function collapseNewcomers(
+    collapsed: ReadonlySet<string>,
+    newcomers: readonly string[],
+    totalCount: number,
+): Set<string> {
+    return new Set([...collapsed, ...(totalCount > AUTO_COLLAPSE_THRESHOLD ? newcomers : [])]);
+}
+
 // One color per source file, spread around the color wheel with the golden angle so that neighbours
 // in the list stay distinct. With a single file there is nothing to tell apart, so no color.
 export function sourceColors(sources: readonly string[]): Map<string, string> {
