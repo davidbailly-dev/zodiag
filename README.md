@@ -59,6 +59,11 @@ its address and opens it in your browser. Stop it with `Ctrl+C`.
   (`1`, `0..1`, `0..*`). Dashed arrows are [inferred relations](#inferred-relations); a checkbox in
   the sidebar shows or hides them.
 - Click a schema to highlight its links and fade the rest; click the background to reset.
+- Cards can be folded with the arrow in their header (links then start from the header), or all at
+  once from the sidebar. Beyond 10 schemas, cards start folded so that the whole graph stays readable;
+  on a graph with more than 20 relations the multiplicity labels only show on the highlighted links.
+- When schemas come from several files, each file has its own color, shown on the cards and in the
+  sidebar.
 - The sidebar filters schemas by name and by source file. Cards can be dragged; zoom and pan with
   the mouse, the controls or the minimap.
 - The theme follows your system (light or dark).
