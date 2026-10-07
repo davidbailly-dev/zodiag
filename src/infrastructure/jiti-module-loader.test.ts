@@ -13,12 +13,7 @@ describe('JitiModuleLoader', () => {
         const { modules, failures } = await new JitiModuleLoader().load(path.join(fixtures, 'shop'));
 
         expect(failures).toEqual([]);
-        expect(modules.map((module) => module.filePath)).toEqual([
-            'order.ts',
-            'orderLine.ts',
-            'shop.ts',
-            'index.ts',
-        ]);
+        expect(modules.map((module) => module.filePath)).toEqual(['order.ts', 'orderLine.ts', 'shop.ts', 'index.ts']);
         expect(Object.keys(modules[0]?.exports ?? {})).toContain('OrderSchema');
     });
 
@@ -41,17 +36,20 @@ describe('JitiModuleLoader', () => {
         const directory = await mkdtemp(path.join(os.tmpdir(), 'zodiag-reload-'));
         try {
             await writeFile(path.join(directory, 'shared.ts'), 'export const shared = 1;');
-            await writeFile(path.join(directory, 'main.ts'), "import { shared } from './shared';\nexport const value = shared;");
+            await writeFile(
+                path.join(directory, 'main.ts'),
+                "import { shared } from './shared';\nexport const value = shared;",
+            );
             const loader = new JitiModuleLoader();
-            const valueOf = async () => {
+            const readValue = async () => {
                 const { modules } = await loader.load(directory);
                 return modules.find((module) => module.filePath === 'main.ts')?.exports['value'];
             };
 
-            expect(await valueOf()).toBe(1);
+            expect(await readValue()).toBe(1);
 
             await writeFile(path.join(directory, 'shared.ts'), 'export const shared = 2;');
-            expect(await valueOf()).toBe(2);
+            expect(await readValue()).toBe(2);
         } finally {
             await rm(directory, { recursive: true });
         }

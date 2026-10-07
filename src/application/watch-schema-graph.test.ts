@@ -111,7 +111,15 @@ describe('WatchSchemaGraph', () => {
             async () => ({ graph: emptyGraph, failures: [] }),
             async () => ({ graph: shopGraph, failures: [] }),
         ];
-        const extract = { execute: async () => outcomes.shift()!() };
+        const extract = {
+            execute: async () => {
+                const next = outcomes.shift();
+                if (!next) {
+                    throw new Error('Unexpected extra extraction');
+                }
+                return next();
+            },
+        };
         new WatchSchemaGraph(extract, watcher).start('./schemas', {}, listener);
 
         for (let index = 0; index < 3; index += 1) {

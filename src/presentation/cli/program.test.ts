@@ -6,8 +6,8 @@ import type { ChangeWatcher } from '../../application/ports/change-watcher.js';
 import type { ViewerLauncher, ViewerOptions } from '../../application/ports/viewer-launcher.js';
 import type { SchemaGraph } from '../../domain/index.js';
 import { createDefaultDependencies } from './composition.js';
-import { createProgram } from './program.js';
 import type { CliDependencies } from './program.js';
+import { createProgram } from './program.js';
 
 const fixtures = path.resolve(import.meta.dirname, '../../../tests/fixtures');
 const temporaryDirectories: string[] = [];

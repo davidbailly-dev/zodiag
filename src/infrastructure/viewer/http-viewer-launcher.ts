@@ -1,7 +1,7 @@
-import { createServer } from 'node:http';
-import type { IncomingMessage, Server, ServerResponse } from 'node:http';
-import type { AddressInfo } from 'node:net';
 import { readFile, stat } from 'node:fs/promises';
+import type { IncomingMessage, Server, ServerResponse } from 'node:http';
+import { createServer } from 'node:http';
+import type { AddressInfo } from 'node:net';
 import path from 'node:path';
 import type { RunningViewer, ViewerLauncher, ViewerOptions } from '../../application/ports/viewer-launcher.js';
 import type { SchemaGraph } from '../../domain/index.js';

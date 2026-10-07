@@ -37,7 +37,11 @@ export function inferRelations(nodes: readonly SchemaNode[]): Relation[] {
 }
 
 function findTarget(source: ObjectNode, field: Field, objects: readonly ObjectNode[]): ObjectNode | undefined {
-    const pattern = isIdentifierList(field.type) ? IDENTIFIER_LIST : isIdentifier(field.type) ? SINGLE_IDENTIFIER : undefined;
+    const pattern = isIdentifierList(field.type)
+        ? IDENTIFIER_LIST
+        : isIdentifier(field.type)
+          ? SINGLE_IDENTIFIER
+          : undefined;
     const prefix = pattern?.exec(field.name)?.[1];
     if (prefix === undefined) {
         return undefined;

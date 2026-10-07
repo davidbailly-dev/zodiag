@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { SchemaGraph } from '../../../src/domain/index.js';
 import type { Field, SchemaNode, TypeExpression } from '../../../src/domain/index.js';
+import { SchemaGraph } from '../../../src/domain/index.js';
 import { buildEntities, cardinalityLabel } from './model.js';
 
 const string: TypeExpression = { kind: 'primitive', name: 'string' };

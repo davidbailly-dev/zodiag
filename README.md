@@ -183,6 +183,9 @@ plutôt qu'avec `instanceof`, car le projet analysé embarque sa propre copie de
 | `npm run typecheck`  | Vérifie les types du CLI et du viewer sans rien émettre                    |
 | `npm test`           | Lance les tests une fois (Vitest)                                          |
 | `npm run test:watch` | Lance les tests en mode watch                                              |
+| `npm run lint`       | Analyse le code avec [Biome](https://biomejs.dev) (règles recommandées)    |
+| `npm run format`     | Formate le code avec Biome (modifie les fichiers)                          |
+| `npm run check`      | Lint, format et ordre des imports en lecture seule (utile en CI)           |
 
 Le viewer est servi depuis `dist/viewer` : `npm run build` doit donc avoir été exécuté avant de
 l'utiliser.

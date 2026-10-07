@@ -17,7 +17,9 @@ beforeEach(async () => {
 });
 
 afterEach(async () => {
-    handles.splice(0).forEach((handle) => handle.close());
+    handles.splice(0).forEach((handle) => {
+        handle.close();
+    });
     await rm(directory, { recursive: true });
 });
 

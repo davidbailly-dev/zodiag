@@ -1,9 +1,9 @@
 import type { LoadedModule } from '../../application/ports/module-loader.js';
 import type { SchemaIntrospector } from '../../application/ports/schema-introspector.js';
-import { SchemaGraph } from '../../domain/index.js';
 import type { SchemaNode } from '../../domain/index.js';
-import { enumValuesOf, isZodSchema } from './zod-schema.js';
+import { SchemaGraph } from '../../domain/index.js';
 import type { ZodSchema } from './zod-schema.js';
+import { enumValuesOf, isZodSchema } from './zod-schema.js';
 import { ZodSchemaReader } from './zod-schema-reader.js';
 
 const SCHEMA_SUFFIX = 'Schema';
