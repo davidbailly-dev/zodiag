@@ -1,0 +1,49 @@
+{
+    "name": "zodiac",
+    "version": "0.1.0",
+    "description": "Visualize Zod schemas as diagrams",
+    "private": true,
+    "type": "module",
+    "bin": {
+        "zodiac": "./dist/presentation/cli/main.js"
+    },
+    "files": [
+        "dist"
+    ],
+    "engines": {
+        "node": ">=20.11"
+    },
+    "scripts": {
+        "build": "tsc -p tsconfig.build.json && vite build",
+        "prepack": "npm run build",
+        "typecheck": "tsc --noEmit && tsc -p viewer/tsconfig.json",
+        "test": "vitest run",
+        "test:watch": "vitest"
+    },
+    "peerDependencies": {
+        "zod": "^4.0.0"
+    },
+    "peerDependenciesMeta": {
+        "zod": {
+            "optional": true
+        }
+    },
+    "dependencies": {
+        "commander": "^15.0.0",
+        "jiti": "^2.7.0"
+    },
+    "devDependencies": {
+        "@dagrejs/dagre": "^3.1.1",
+        "@types/node": "^26.6.4",
+        "@types/react": "^19.3.0",
+        "@types/react-dom": "^19.3.0",
+        "@vitejs/plugin-react": "^6.1.2",
+        "@xyflow/react": "^12.12.0",
+        "react": "^19.3.0",
+        "react-dom": "^19.3.0",
+        "typescript": "^7.0.2",
+        "vite": "^8.3.3",
+        "vitest": "^5.0.3",
+        "zod": "^4.6.4"
+    }
+}
