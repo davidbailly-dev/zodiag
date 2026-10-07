@@ -1,7 +1,7 @@
 import type { Field, TypeExpression } from '../../domain/index.js';
 import { describeConstraints } from './describe-constraints.js';
-import { enumValuesOf, schemaAt, schemaListAt, shapeOf } from './zod-schema.js';
 import type { ZodDef, ZodSchema } from './zod-schema.js';
+import { enumValuesOf, schemaAt, schemaListAt, shapeOf } from './zod-schema.js';
 
 const PRIMITIVE_TYPES = new Set([
     'string',

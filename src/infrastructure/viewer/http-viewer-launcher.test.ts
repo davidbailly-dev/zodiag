@@ -1,5 +1,5 @@
-import { get, request } from 'node:http';
 import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { get, request } from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -13,7 +13,13 @@ const graph = SchemaGraph.create([
         name: 'Shop',
         source: 'shop.ts',
         fields: [
-            { name: 'id', type: { kind: 'primitive', name: 'string' }, optional: false, nullable: false, constraints: [] },
+            {
+                name: 'id',
+                type: { kind: 'primitive', name: 'string' },
+                optional: false,
+                nullable: false,
+                constraints: [],
+            },
         ],
     },
 ]);
@@ -99,7 +105,9 @@ describe('HttpViewerLauncher', () => {
         const response = await fetch(`${url}/graph.json`);
 
         expect(response.headers.get('content-type')).toBe('application/json; charset=utf-8');
-        expect(await response.json()).toEqual(JSON.parse(JSON.stringify({ nodes: graph.nodes, relations: graph.relations })));
+        expect(await response.json()).toEqual(
+            JSON.parse(JSON.stringify({ nodes: graph.nodes, relations: graph.relations })),
+        );
     });
 
     it('serves the new graph after an update and announces it to the open pages', async () => {

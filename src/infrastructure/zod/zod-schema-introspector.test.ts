@@ -198,7 +198,8 @@ describe('ZodSchemaIntrospector', () => {
             source: 'Category',
             target: 'Category',
             fieldName: 'children',
-            kind: 'explicit', cardinality: 'many',
+            kind: 'explicit',
+            cardinality: 'many',
         });
     });
 

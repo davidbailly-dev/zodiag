@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Relation } from '../../../src/domain/index.js';
-import { COLLAPSED_WIDTH, NODE_WIDTH, entityHeight } from './dimensions.js';
+import { COLLAPSED_WIDTH, entityHeight, NODE_WIDTH } from './dimensions.js';
 import { computeLayout } from './layout.js';
 import type { EntityData } from './model.js';
 
@@ -22,7 +22,8 @@ const relation = (source: string, target: string): Relation => ({
     source,
     target,
     fieldName: 'link',
-    kind: 'explicit', cardinality: 'many',
+    kind: 'explicit',
+    cardinality: 'many',
 });
 
 describe('computeLayout', () => {

@@ -1,5 +1,5 @@
-import { findReferences, formatTypeExpression } from '../../../src/domain/index.js';
 import type { Cardinality, Field, SchemaNode } from '../../../src/domain/index.js';
+import { findReferences, formatTypeExpression } from '../../../src/domain/index.js';
 import type { GraphData } from '../graph-data.js';
 
 export type EntityField = {
@@ -71,10 +71,7 @@ function toEntityField(
     };
 }
 
-function findEnumValues(
-    field: Field,
-    nodesByName: ReadonlyMap<string, SchemaNode>,
-): (string | number)[] | undefined {
+function findEnumValues(field: Field, nodesByName: ReadonlyMap<string, SchemaNode>): (string | number)[] | undefined {
     for (const { target } of findReferences(field.type)) {
         const node = nodesByName.get(target);
         if (node?.kind === 'enum') {

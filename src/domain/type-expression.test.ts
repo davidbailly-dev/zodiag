@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { findReferences, formatTypeExpression } from './type-expression.js';
 import type { TypeExpression } from './type-expression.js';
+import { findReferences, formatTypeExpression } from './type-expression.js';
 
 const string: TypeExpression = { kind: 'primitive', name: 'string' };
 const shop: TypeExpression = { kind: 'reference', target: 'Shop' };

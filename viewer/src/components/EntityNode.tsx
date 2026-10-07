@@ -1,6 +1,6 @@
-import { Handle, Position } from '@xyflow/react';
 import type { Node, NodeProps } from '@xyflow/react';
-import { BODY_PADDING, HEADER_HEIGHT, ROW_HEIGHT, entityHeight, entityWidth } from '../flow/dimensions.js';
+import { Handle, Position } from '@xyflow/react';
+import { BODY_PADDING, entityHeight, entityWidth, HEADER_HEIGHT, ROW_HEIGHT } from '../flow/dimensions.js';
 import type { EntityData } from '../flow/model.js';
 
 export type EntityNodeData = EntityData & {
@@ -22,7 +22,10 @@ export function EntityNode({ data }: NodeProps<EntityFlowNode>) {
         >
             <header
                 className={data.collapsed ? 'entity__header entity__header--collapsed' : 'entity__header'}
-                style={{ height: HEADER_HEIGHT, ...(data.color === undefined ? {} : { borderLeft: `4px solid ${data.color}` }) }}
+                style={{
+                    height: HEADER_HEIGHT,
+                    ...(data.color === undefined ? {} : { borderLeft: `4px solid ${data.color}` }),
+                }}
                 title={data.description}
             >
                 <Handle type="target" position={Position.Top} id="in" />

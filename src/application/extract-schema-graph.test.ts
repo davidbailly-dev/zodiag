@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { SchemaGraph } from '../domain/index.js';
 import type { Field } from '../domain/index.js';
+import { SchemaGraph } from '../domain/index.js';
 import { ExtractSchemaGraph } from './extract-schema-graph.js';
 import type { LoadedModule, ModuleLoader } from './ports/module-loader.js';
 import type { SchemaIntrospector } from './ports/schema-introspector.js';
