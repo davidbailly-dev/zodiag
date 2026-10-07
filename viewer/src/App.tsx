@@ -25,7 +25,16 @@ export function App() {
 }
 
 function Viewer({ graph }: { graph: GraphData }) {
-    const entities = useMemo(() => buildEntities(graph), [graph]);
+    const [showInferred, setShowInferred] = useState(true);
+    const inferredCount = useMemo(
+        () => graph.relations.filter((relation) => relation.kind === 'inferred').length,
+        [graph],
+    );
+    const relations = useMemo(
+        () => (showInferred ? graph.relations : graph.relations.filter((relation) => relation.kind === 'explicit')),
+        [graph, showInferred],
+    );
+    const entities = useMemo(() => buildEntities({ nodes: graph.nodes, relations }), [graph, relations]);
     const sources = useMemo(() => [...new Set(entities.map((entity) => entity.source))].sort(), [entities]);
     const [hiddenSources, setHiddenSources] = useState<ReadonlySet<string>>(new Set());
     const [query, setQuery] = useState('');
@@ -55,7 +64,10 @@ function Viewer({ graph }: { graph: GraphData }) {
                 hiddenSources={hiddenSources}
                 query={query}
                 visibleCount={visibleEntities.length}
-                relationCount={graph.relations.length}
+                relationCount={relations.length}
+                inferredCount={inferredCount}
+                showInferred={showInferred}
+                onToggleInferred={() => setShowInferred((current) => !current)}
                 onQueryChange={setQuery}
                 onToggleSource={toggleSource}
                 onShowAll={() => setHiddenSources(new Set())}
@@ -64,9 +76,9 @@ function Viewer({ graph }: { graph: GraphData }) {
             <main className="canvas">
                 <Diagram
                     // A different set of entities means a different layout: start from a fresh, fitted view.
-                    key={visibleEntities.map((entity) => entity.name).join('|')}
+                    key={`${showInferred}:${visibleEntities.map((entity) => entity.name).join('|')}`}
                     entities={visibleEntities}
-                    relations={graph.relations}
+                    relations={relations}
                 />
             </main>
         </div>

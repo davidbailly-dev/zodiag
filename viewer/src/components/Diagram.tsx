@@ -54,7 +54,12 @@ export function Diagram({ entities, relations }: DiagramProps) {
                         targetHandle: 'in',
                         label: cardinalityLabel(relation.cardinality),
                         markerEnd: { type: MarkerType.ArrowClosed },
-                        className: selected === null ? '' : isActive ? 'edge--active' : 'edge--dimmed',
+                        className: [
+                            relation.kind === 'inferred' ? 'edge--inferred' : '',
+                            selected === null ? '' : isActive ? 'edge--active' : 'edge--dimmed',
+                        ]
+                            .filter(Boolean)
+                            .join(' '),
                     };
                 }),
         [relations, visibleNames, selected],

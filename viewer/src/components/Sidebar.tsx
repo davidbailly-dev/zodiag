@@ -7,6 +7,9 @@ interface SidebarProps {
     query: string;
     visibleCount: number;
     relationCount: number;
+    inferredCount: number;
+    showInferred: boolean;
+    onToggleInferred(): void;
     onQueryChange(query: string): void;
     onToggleSource(source: string): void;
     onShowAll(): void;
@@ -62,6 +65,14 @@ export function Sidebar(props: SidebarProps) {
                     );
                 })}
             </ul>
+
+            {props.inferredCount > 0 && (
+                <label className="sidebar__toggle" title="Fields such as shopId are linked to the Shop schema">
+                    <input type="checkbox" checked={props.showInferred} onChange={props.onToggleInferred} />
+                    <span>Inferred relations (dashed)</span>
+                    <span className="sidebar__count">{props.inferredCount}</span>
+                </label>
+            )}
 
             <p className="sidebar__hint">Click a schema to highlight its links. Drag to rearrange.</p>
         </aside>
