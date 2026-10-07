@@ -37,7 +37,7 @@ export function createProgram(dependencies: CliDependencies): Command {
     const program = new Command();
 
     program
-        .name('zodiac')
+        .name('zodiag')
         .description('Visualize Zod schemas as diagrams')
         .version(version)
         .argument('<target>', 'a file or a directory containing Zod schemas')
@@ -80,7 +80,7 @@ export function createProgram(dependencies: CliDependencies): Command {
                     open: options.open,
                     ...(options.port === undefined ? {} : { port: options.port }),
                 });
-                io.stderr(`zodiac viewer running at ${viewer.url} (press Ctrl+C to stop)\n`);
+                io.stderr(`zodiag viewer running at ${viewer.url} (press Ctrl+C to stop)\n`);
                 if (options.watch) {
                     io.stderr(`watching ${target} for changes\n`);
                     new WatchSchemaGraph(extractSchemaGraph, changeWatcher).start(target, extraction, {

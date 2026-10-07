@@ -1,8 +1,8 @@
-# Zodiac
+# Zodiag
 
 Visualize [Zod](https://zod.dev) schemas as diagrams.
 
-Point Zodiac at a file or a folder of schemas (`order.ts`, `shop.ts`, `orderLine.ts`, ...) and it
+Point Zodiag at a file or a folder of schemas (`order.ts`, `shop.ts`, `orderLine.ts`, ...) and it
 builds a graph of your schemas, their fields and the relations between them, shown in a local web
 viewer or exported as [Mermaid](https://mermaid.js.org).
 
@@ -22,23 +22,23 @@ npm run build
 node dist/presentation/cli/main.js ./path/to/schemas
 ```
 
-To get the `zodiac` command on your path while developing, run `npm link` after the build.
+To get the `zodiag` command on your path while developing, run `npm link` after the build.
 
-`npm pack` builds the project and produces an installable tarball (`zodiac-<version>.tgz`) that
-contains the CLI and the viewer; installing it gives the `zodiac` command. Releases are described in
+`npm pack` builds the project and produces an installable tarball (`zodiag-<version>.tgz`) that
+contains the CLI and the viewer; installing it gives the `zodiag` command. Releases are described in
 the [changelog](CHANGELOG.md).
 
 ## Usage
 
 ```bash
 # Open the interactive viewer for a folder of schemas (or a single file)
-zodiac ./src/schemas
+zodiag ./src/schemas
 
 # Print a Mermaid erDiagram instead
-zodiac ./src/schemas --format mermaid
+zodiag ./src/schemas --format mermaid
 
 # Write the Mermaid diagram to a file (missing directories are created)
-zodiac ./src/schemas --format mermaid --output docs/schemas.mmd
+zodiag ./src/schemas --format mermaid --output docs/schemas.mmd
 ```
 
 | Option                  | Description                                                              |
@@ -55,7 +55,7 @@ diagram. The command exits with an error if the target does not exist or contain
 
 ### Viewer
 
-`zodiac <target>` starts a small web server on `127.0.0.1` (never exposed on the network), prints
+`zodiag <target>` starts a small web server on `127.0.0.1` (never exposed on the network), prints
 its address and opens it in your browser. Stop it with `Ctrl+C`.
 
 - Each object schema is a card listing its fields, their types, `?` for optional fields and their
@@ -75,7 +75,7 @@ its address and opens it in your browser. Stop it with `Ctrl+C`.
 
 #### Live reload
 
-While the viewer runs, Zodiac watches the schema files of the target. When one is added, modified or
+While the viewer runs, Zodiag watches the schema files of the target. When one is added, modified or
 removed, the diagram updates within about a second, without losing your search, file filters or
 folded cards (the sidebar shows when it was last reloaded). Disable it with `--no-watch`.
 
@@ -126,7 +126,7 @@ Not supported yet: source comments and `export default`.
 
 ### Inferred relations
 
-Zod cannot express foreign keys, so `shopId: z.string()` is just a string. Zodiac guesses the link
+Zod cannot express foreign keys, so `shopId: z.string()` is just a string. Zodiag guesses the link
 when all of these hold, and draws it as a dashed relation (disable it with `--no-inferred-relations`):
 
 - the field holds a plain identifier: a `string` or a `number` (`shopIds: z.array(z.string())` is a
@@ -139,7 +139,7 @@ when all of these hold, and draws it as a dashed relation (disable it with `--no
 Optional and nullable identifiers give a `0..1` relation. A plain `id` field, or a name such as
 `userId` with no `User` schema, creates nothing.
 
-> **Note:** analyzing a file executes it (imports run their top-level code). Only point Zodiac at
+> **Note:** analyzing a file executes it (imports run their top-level code). Only point Zodiag at
 > code you trust. Files that fail to load are reported and skipped.
 
 ## Architecture
