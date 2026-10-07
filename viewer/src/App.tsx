@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Diagram } from './components/Diagram.js';
 import { Sidebar } from './components/Sidebar.js';
 import { fetchGraph } from './graph-data.js';
 import type { GraphData } from './graph-data.js';
+import { initiallyCollapsed, sourceColors } from './flow/appearance.js';
 import { buildEntities } from './flow/model.js';
 
 export function App() {
@@ -36,6 +37,24 @@ function Viewer({ graph }: { graph: GraphData }) {
     );
     const entities = useMemo(() => buildEntities({ nodes: graph.nodes, relations }), [graph, relations]);
     const sources = useMemo(() => [...new Set(entities.map((entity) => entity.source))].sort(), [entities]);
+    const colors = useMemo(() => sourceColors(sources), [sources]);
+    const entityNames = useMemo(() => entities.map((entity) => entity.name), [entities]);
+    const [collapsed, setCollapsed] = useState<ReadonlySet<string>>(() => initiallyCollapsed(entityNames));
+    // Bumped by "collapse all" / "expand all" to fit the view again, since every card changes size.
+    const [layoutVersion, setLayoutVersion] = useState(0);
+    const toggleCollapse = useCallback((name: string) => {
+        setCollapsed((current) => {
+            const next = new Set(current);
+            if (!next.delete(name)) {
+                next.add(name);
+            }
+            return next;
+        });
+    }, []);
+    const setAllCollapsed = (value: boolean) => {
+        setCollapsed(new Set(value ? entityNames : []));
+        setLayoutVersion((current) => current + 1);
+    };
     const [hiddenSources, setHiddenSources] = useState<ReadonlySet<string>>(new Set());
     const [query, setQuery] = useState('');
 
@@ -68,6 +87,10 @@ function Viewer({ graph }: { graph: GraphData }) {
                 inferredCount={inferredCount}
                 showInferred={showInferred}
                 onToggleInferred={() => setShowInferred((current) => !current)}
+                colors={colors}
+                collapsedCount={entityNames.filter((name) => collapsed.has(name)).length}
+                onCollapseAll={() => setAllCollapsed(true)}
+                onExpandAll={() => setAllCollapsed(false)}
                 onQueryChange={setQuery}
                 onToggleSource={toggleSource}
                 onShowAll={() => setHiddenSources(new Set())}
@@ -76,9 +99,12 @@ function Viewer({ graph }: { graph: GraphData }) {
             <main className="canvas">
                 <Diagram
                     // A different set of entities means a different layout: start from a fresh, fitted view.
-                    key={`${showInferred}:${visibleEntities.map((entity) => entity.name).join('|')}`}
+                    key={`${layoutVersion}:${showInferred}:${visibleEntities.map((entity) => entity.name).join('|')}`}
                     entities={visibleEntities}
                     relations={relations}
+                    collapsed={collapsed}
+                    colors={colors}
+                    onToggleCollapse={toggleCollapse}
                 />
             </main>
         </div>

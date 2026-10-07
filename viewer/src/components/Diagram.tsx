@@ -7,8 +7,9 @@ import {
     useNodesState,
 } from '@xyflow/react';
 import type { Edge } from '@xyflow/react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Relation } from '../../../src/domain/index.js';
+import { DENSE_RELATION_THRESHOLD } from '../flow/appearance.js';
 import { computeLayout } from '../flow/layout.js';
 import { cardinalityLabel } from '../flow/model.js';
 import type { EntityData } from '../flow/model.js';
@@ -20,22 +21,33 @@ const nodeTypes = { entity: EntityNode };
 interface DiagramProps {
     entities: readonly EntityData[];
     relations: readonly Relation[];
+    collapsed: ReadonlySet<string>;
+    colors: ReadonlyMap<string, string>;
+    onToggleCollapse(name: string): void;
 }
 
-export function Diagram({ entities, relations }: DiagramProps) {
+export function Diagram({ entities, relations, collapsed, colors, onToggleCollapse }: DiagramProps) {
     const initialNodes = useMemo(() => {
-        const positions = computeLayout(entities, relations);
-        return entities.map(
-            (entity): EntityFlowNode => ({
+        const positions = computeLayout(entities, relations, collapsed);
+        return entities.map((entity): EntityFlowNode => {
+            const color = colors.get(entity.source);
+            return {
                 id: entity.name,
                 type: 'entity',
                 position: positions.get(entity.name) ?? { x: 0, y: 0 },
-                data: entity,
-            }),
-        );
-    }, [entities, relations]);
-    // Positions are owned by React Flow so that entities can be dragged.
-    const [nodes, , onNodesChange] = useNodesState(initialNodes);
+                data: {
+                    ...entity,
+                    collapsed: collapsed.has(entity.name),
+                    ...(color === undefined ? {} : { color }),
+                    onToggleCollapse: () => onToggleCollapse(entity.name),
+                },
+            };
+        });
+    }, [entities, relations, collapsed, colors, onToggleCollapse]);
+    // Positions are owned by React Flow so that entities can be dragged. Folding a card changes the
+    // layout, which replaces the positions (the viewport is left alone).
+    const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
+    useEffect(() => setNodes(initialNodes), [initialNodes, setNodes]);
     const [selected, setSelected] = useState<string | null>(null);
 
     const visibleNames = useMemo(() => new Set(entities.map((entity) => entity.name)), [entities]);
@@ -81,6 +93,7 @@ export function Diagram({ entities, relations }: DiagramProps) {
 
     return (
         <ReactFlow
+            className={edges.length > DENSE_RELATION_THRESHOLD ? 'diagram diagram--dense' : 'diagram'}
             nodes={displayedNodes}
             edges={edges}
             nodeTypes={nodeTypes}

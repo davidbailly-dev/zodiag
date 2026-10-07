@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Relation } from '../../../src/domain/index.js';
-import { NODE_WIDTH, entityHeight } from './dimensions.js';
+import { COLLAPSED_WIDTH, NODE_WIDTH, entityHeight } from './dimensions.js';
 import { computeLayout } from './layout.js';
 import type { EntityData } from './model.js';
 
@@ -53,6 +53,27 @@ describe('computeLayout', () => {
                 expect(overlapsHorizontally && overlapsVertically).toBe(false);
             }
         }
+    });
+
+    it('reserves less room for collapsed entities', () => {
+        const entities = [entity('Order', 12), entity('OrderLine', 3)];
+        const relations = [relation('Order', 'OrderLine')];
+        const gap = (collapsed: Set<string>) => {
+            const positions = computeLayout(entities, relations, collapsed);
+            return (positions.get('OrderLine')?.y ?? 0) - (positions.get('Order')?.y ?? 0);
+        };
+
+        expect(gap(new Set())).toBe(gap(new Set(['Order'])) + entityHeight(12) - entityHeight(12, true));
+    });
+
+    it('packs collapsed entities closer together on the same rank', () => {
+        const entities = [entity('A'), entity('B')];
+        const distance = (collapsed: Set<string>) => {
+            const positions = computeLayout(entities, [], collapsed);
+            return Math.abs((positions.get('B')?.x ?? 0) - (positions.get('A')?.x ?? 0));
+        };
+
+        expect(distance(new Set())).toBe(distance(new Set(['A', 'B'])) + NODE_WIDTH - COLLAPSED_WIDTH);
     });
 
     it('supports self-references, unknown relation ends and an empty graph', () => {

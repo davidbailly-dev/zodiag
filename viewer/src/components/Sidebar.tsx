@@ -8,6 +8,10 @@ interface SidebarProps {
     visibleCount: number;
     relationCount: number;
     inferredCount: number;
+    colors: ReadonlyMap<string, string>;
+    collapsedCount: number;
+    onCollapseAll(): void;
+    onExpandAll(): void;
     showInferred: boolean;
     onToggleInferred(): void;
     onQueryChange(query: string): void;
@@ -35,6 +39,18 @@ export function Sidebar(props: SidebarProps) {
             />
 
             <div className="sidebar__section">
+                <h2>Cards</h2>
+                <span className="sidebar__actions">
+                    <button type="button" onClick={props.onExpandAll} disabled={props.collapsedCount === 0}>
+                        expand all
+                    </button>
+                    <button type="button" onClick={props.onCollapseAll} disabled={props.collapsedCount === entities.length}>
+                        collapse all
+                    </button>
+                </span>
+            </div>
+
+            <div className="sidebar__section">
                 <h2>Files</h2>
                 <span className="sidebar__actions">
                     <button type="button" onClick={props.onShowAll}>
@@ -56,6 +72,9 @@ export function Sidebar(props: SidebarProps) {
                                     checked={!hiddenSources.has(source)}
                                     onChange={() => props.onToggleSource(source)}
                                 />
+                                {props.colors.has(source) && (
+                                    <span className="sidebar__swatch" style={{ background: props.colors.get(source) }} />
+                                )}
                                 <span className="sidebar__file" title={source}>
                                     {source}
                                 </span>
@@ -74,7 +93,7 @@ export function Sidebar(props: SidebarProps) {
                 </label>
             )}
 
-            <p className="sidebar__hint">Click a schema to highlight its links. Drag to rearrange.</p>
+            <p className="sidebar__hint">Click a schema to highlight its links, ▾ to fold it. Drag to rearrange.</p>
         </aside>
     );
 }
