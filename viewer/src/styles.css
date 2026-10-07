@@ -313,6 +313,11 @@ body {
     border: 1px solid var(--surface);
 }
 
+/* Handles only anchor the links (nothing can be connected): keep the card's cursor, not React Flow's crosshair. */
+.react-flow__handle.connectionindicator {
+    cursor: inherit;
+}
+
 .react-flow__edge-path {
     stroke: var(--edge);
     stroke-width: 1.5;
