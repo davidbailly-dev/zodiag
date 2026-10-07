@@ -6,9 +6,9 @@ Point Zodiac at a file or a folder of schemas (`order.ts`, `shop.ts`, `orderLine
 builds a graph of your schemas, their fields and the relations between them, shown in a local web
 viewer or exported as [Mermaid](https://mermaid.js.org).
 
-> **Status: work in progress.** The schema extraction (domain model, Zod 4 reader, file loading)
-> works and is tested, but there is no CLI command, Mermaid export or viewer yet. The features
-> marked as *planned* are not implemented.
+> **Status: work in progress.** Schema extraction and the Mermaid export are available from the
+> command line. The interactive viewer is not implemented yet; features marked as *planned* are
+> not available.
 
 ## Requirements
 
@@ -20,18 +20,43 @@ viewer or exported as [Mermaid](https://mermaid.js.org).
 ```bash
 npm install
 npm run build
-node dist/presentation/cli/main.js --version
+node dist/presentation/cli/main.js ./path/to/schemas
 ```
 
-## Usage (planned)
+To get the `zodiac` command on your path while developing, run `npm link` after the build.
+
+## Usage
 
 ```bash
-# Open the interactive viewer for a folder of schemas
+# Print a Mermaid erDiagram for a folder of schemas (or a single file)
 zodiac ./src/schemas
 
-# Export a Mermaid erDiagram
-zodiac ./src/schemas --format mermaid
+# Write it to a file instead (missing directories are created)
+zodiac ./src/schemas --output docs/schemas.mmd
 ```
+
+| Option                  | Description                                          |
+|-------------------------|------------------------------------------------------|
+| `-f, --format <format>` | Output format. Only `mermaid` for now (the default)  |
+| `-o, --output <file>`   | Write the result to a file instead of the stdout     |
+
+Warnings (files that fail to load) go to the standard error, so the standard output stays a valid
+diagram. The command exits with an error if the target does not exist or contains no schema.
+
+The output can be pasted into a Markdown file (GitHub renders ` ```mermaid ` blocks) or into the
+[Mermaid Live Editor](https://mermaid.live).
+
+*Planned:* an interactive local viewer (`zodiac <target> --format viewer`).
+
+### Mermaid output
+
+- Each object schema is an entity whose attributes are the fields. Optional fields, constraints
+  (`int, >= 0`) and descriptions go in the attribute comment.
+- Enums are not entities: they appear as attribute types, with their values in the comment
+  (`one of: completed | abandoned | refunded`).
+- Complex types are flattened to what Mermaid accepts (`string | number` becomes `string_or_number`).
+- A relation reads "a source has one / zero or one / zero or more targets":
+  `Order ||--o{ OrderLine : "lines"`.
 
 ## How it works
 
@@ -39,8 +64,8 @@ zodiac ./src/schemas --format mermaid
    and the Zod objects are walked through their internal definition. Every exported object or enum
    schema becomes a node, so a field pointing to another exported schema becomes a relation.
 2. **Model**: the result is a framework-agnostic `SchemaGraph` (nodes, fields, relations).
-3. **Rendering** *(planned)*: the graph is exported as Mermaid text or displayed in an interactive
-   viewer (React Flow).
+3. **Rendering**: the graph is exported as Mermaid text. An interactive viewer (React Flow) is
+   *planned*.
 
 What the extraction understands:
 
@@ -66,9 +91,10 @@ Domain-Driven Design, dependencies pointing towards the domain:
 ```
 src/
   domain/          pure model (SchemaGraph, SchemaNode, Field, Relation, TypeExpression)
-  application/     use case (ExtractSchemaGraph) and ports (ModuleLoader, SchemaIntrospector)
-  infrastructure/  adapters (jiti module loader, Zod v4 introspection)
-  presentation/    CLI and viewer
+  application/     use case (ExtractSchemaGraph) and ports (ModuleLoader, SchemaIntrospector,
+                   GraphRenderer)
+  infrastructure/  adapters (jiti module loader, Zod v4 introspection, Mermaid renderer)
+  presentation/    CLI (and viewer, planned)
 ```
 
 The domain knows nothing about Zod: the Zod adapter recognizes schemas by their internal shape
@@ -94,6 +120,6 @@ commit directly on `main` or `develop`. Commits follow
 
 - [x] Project setup
 - [x] Domain model and Zod v4 extractor
-- [ ] Mermaid export and CLI command
+- [x] Mermaid export and CLI command
 - [ ] Interactive web viewer
 - [ ] Source comments, watch mode, inferred relations (`shopId` -> `Shop`)
