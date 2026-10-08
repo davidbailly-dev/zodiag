@@ -1,29 +1,43 @@
 :root {
-    --bg: #f6f7f9;
+    /* Light variant derived from the SalesPulse palette (primary blue / secondary violet). */
+    --bg: #f4f6fb;
     --surface: #ffffff;
-    --surface-muted: #eef0f4;
-    --border: #d5d9e0;
-    --text: #1c2330;
-    --text-muted: #667085;
-    --accent: #4f46e5;
-    --enum: #b45309;
-    --edge: #98a2b3;
+    --surface-muted: #eff6ff;
+    --border: #d3dbe8;
+    --text: #0a0e1a;
+    --text-muted: #5b6577;
+    --accent: #2563eb;
+    --type-string: #2563eb;
+    --type-number: #059669;
+    --type-boolean: #b45309;
+    --type-date: #0d9488;
+    --type-enum: #7c3aed;
+    --type-entity: #db2777;
+    --edge: #94a3b8;
+    --danger: #dc2626;
     --font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
     color-scheme: light dark;
 }
 
+/* Dark variant: the SalesPulse palette itself (docs/design/palette.md in that project). */
 @media (prefers-color-scheme: dark) {
     :root {
-        --bg: #11151c;
-        --surface: #1a202b;
-        --surface-muted: #232b38;
-        --border: #323c4d;
-        --text: #e6e9ef;
-        --text-muted: #94a0b4;
-        --accent: #8b87ff;
-        --enum: #f0b35b;
-        --edge: #5d6b82;
+        --bg: #0a0e1a;
+        --surface: #111827;
+        --surface-muted: #1a2234;
+        --border: #1f2937;
+        --text: #eff6ff;
+        --text-muted: #9ca3af;
+        --accent: #60a5fa;
+        --type-string: #60a5fa;
+        --type-number: #34d399;
+        --type-boolean: #fbbf24;
+        --type-date: #2dd4bf;
+        --type-enum: #a78bfa;
+        --type-entity: #f472b6;
+        --edge: #4b5563;
+        --danger: #f87171;
     }
 }
 
@@ -50,7 +64,7 @@ body {
 }
 
 .status--error {
-    color: #d92d20;
+    color: var(--danger);
 }
 
 .app {
@@ -288,9 +302,33 @@ body {
     white-space: nowrap;
 }
 
+.field__type--string {
+    color: var(--type-string);
+}
+
+.field__type--number {
+    color: var(--type-number);
+}
+
+.field__type--boolean {
+    color: var(--type-boolean);
+}
+
+.field__type--date {
+    color: var(--type-date);
+}
+
+.field__type--entity {
+    color: var(--type-entity);
+}
+
 .field__type--enum {
-    color: var(--enum);
+    color: var(--type-enum);
     cursor: help;
+}
+
+.field__type--other {
+    color: var(--text-muted);
 }
 
 .field__constraints {
@@ -305,6 +343,19 @@ body {
 }
 
 /* React Flow tweaks */
+
+/* Feed React Flow's own widgets (controls, minimap, background) with the theme tokens. */
+.react-flow {
+    --xy-background-color: var(--bg);
+    --xy-background-pattern-dots-color: var(--border);
+    --xy-controls-button-background-color: var(--surface);
+    --xy-controls-button-background-color-hover: var(--surface-muted);
+    --xy-controls-button-color: var(--text);
+    --xy-controls-button-border-color: var(--border);
+    --xy-minimap-background-color: var(--surface);
+    --xy-minimap-node-background-color: var(--border);
+    --xy-minimap-mask-background-color: color-mix(in srgb, var(--bg) 70%, transparent);
+}
 
 .react-flow__handle {
     width: 8px;

@@ -11,6 +11,7 @@ function entity(name: string, fieldCount = 2): EntityData {
         fields: Array.from({ length: fieldCount }, (_, index) => ({
             name: `field${index}`,
             type: 'string',
+            category: 'string',
             optional: false,
             constraints: [],
             linked: false,
