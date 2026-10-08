@@ -166,6 +166,14 @@ body {
     background: var(--surface-muted);
 }
 
+.sidebar__file-row--enums {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 6px 4px 32px;
+    color: var(--text-muted);
+}
+
 .sidebar__file {
     flex: 1;
     min-width: 0;

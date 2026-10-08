@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Diagram } from './components/Diagram.js';
 import { Sidebar } from './components/Sidebar.js';
 import { collapseNewcomers, initiallyCollapsed, sourceColors } from './flow/appearance.js';
-import { buildEntities } from './flow/model.js';
+import { buildEntities, findEnumOnlyFiles } from './flow/model.js';
 import type { GraphData } from './graph-data.js';
 import { fetchGraph, subscribeToChanges } from './graph-data.js';
 
@@ -48,6 +48,7 @@ function Viewer({ graph, updatedAt }: { graph: GraphData; updatedAt: Date | null
         [graph, showInferred],
     );
     const entities = useMemo(() => buildEntities({ nodes: graph.nodes, relations }), [graph, relations]);
+    const enumFiles = useMemo(() => findEnumOnlyFiles(graph, entities), [graph, entities]);
     const sources = useMemo(() => [...new Set(entities.map((entity) => entity.source))].sort(), [entities]);
     const colors = useMemo(() => sourceColors(sources), [sources]);
     const entityNames = useMemo(() => entities.map((entity) => entity.name), [entities]);
@@ -104,6 +105,7 @@ function Viewer({ graph, updatedAt }: { graph: GraphData; updatedAt: Date | null
             <Sidebar
                 entities={entities}
                 sources={sources}
+                enumFiles={enumFiles}
                 hiddenSources={hiddenSources}
                 query={query}
                 visibleCount={visibleEntities.length}
