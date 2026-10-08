@@ -208,3 +208,7 @@ commite jamais directement sur `main` ou `develop`. Les commits suivent les
 - [x] Relations inférées (`shopId` -> `Shop`)
 - [x] Mode watch (recharge le viewer quand les schémas changent)
 - [ ] Commentaires du source
+
+## Licence
+
+[MIT](LICENSE) © 2026 David Bailly
