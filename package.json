@@ -1,6 +1,6 @@
 {
     "name": "zodiag",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "Visualize Zod schemas as diagrams",
     "private": true,
     "type": "module",

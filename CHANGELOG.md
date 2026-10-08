@@ -5,6 +5,25 @@ All notable changes to Zodiag are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres
 to [Semantic Versioning](https://semver.org/).
 
+## [0.2.0] - 2026-10-08
+
+### Changed
+
+- The project is renamed from Zodiac to Zodiag: the package, the `zodiag` command and the viewer title.
+- The viewer uses the SalesPulse palette: its dark theme is the palette itself and the light theme is
+  derived from it. The controls, the minimap and the background follow the same colors.
+- Field types are colored by family (string, number, boolean, date, enum, link to another schema)
+  so that they can be told apart at a glance.
+- The README is written in French and opens with a screenshot of the viewer.
+
+### Fixed
+
+- The link handles keep the default cursor instead of the crosshair of React Flow.
+
+### Development
+
+- Biome handles the linting and the formatting of the code base (`npm run check`).
+
 ## [0.1.0] - 2026-10-07
 
 First release.
