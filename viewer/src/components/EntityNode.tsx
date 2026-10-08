@@ -62,9 +62,7 @@ export function EntityNode({ data }: NodeProps<EntityFlowNode>) {
                                 {field.optional ? '?' : ''}
                             </span>
                             <span
-                                className={
-                                    field.enumValues === undefined ? 'field__type' : 'field__type field__type--enum'
-                                }
+                                className={`field__type field__type--${field.category}`}
                                 title={field.enumValues?.join(' | ')}
                             >
                                 {field.type}

@@ -36,10 +36,11 @@ describe('buildEntities', () => {
     it('describes fields with their display type, flags and constraints', () => {
         const order = entities[1];
         expect(order?.fields).toEqual([
-            { name: 'shop', type: 'Shop', optional: false, constraints: [], linked: true },
+            { name: 'shop', type: 'Shop', category: 'entity', optional: false, constraints: [], linked: true },
             {
                 name: 'status',
                 type: 'Status',
+                category: 'enum',
                 optional: false,
                 constraints: [],
                 linked: false,
@@ -48,6 +49,7 @@ describe('buildEntities', () => {
             {
                 name: 'note',
                 type: 'string | null',
+                category: 'string',
                 optional: true,
                 constraints: ['min 2'],
                 linked: false,

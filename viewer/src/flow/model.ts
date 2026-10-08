@@ -1,11 +1,15 @@
 import type { Cardinality, Field, SchemaNode } from '../../../src/domain/index.js';
 import { findReferences, formatTypeExpression } from '../../../src/domain/index.js';
 import type { GraphData } from '../graph-data.js';
+import type { TypeCategory } from './type-category.js';
+import { typeCategory } from './type-category.js';
 
 export type EntityField = {
     name: string;
     // Display form of the type, `| null` included.
     type: string;
+    // Family of the type, which drives its color.
+    category: TypeCategory;
     optional: boolean;
     constraints: string[];
     description?: string;
@@ -59,6 +63,7 @@ function toEntityField(
     const entityField: EntityField = {
         name: field.name,
         type: `${formatTypeExpression(field.type)}${field.nullable ? ' | null' : ''}`,
+        category: typeCategory(field.type, nodesByName),
         optional: field.optional,
         constraints: [...field.constraints],
         linked: linkedFields.has(linkKey(entityName, field.name)),
