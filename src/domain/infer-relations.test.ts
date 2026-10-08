@@ -106,7 +106,10 @@ describe('SchemaGraph.withInferredRelations', () => {
     const nodes: SchemaNode[] = [shop, objectNode('Order', [field('shopId')])];
 
     it('adds the inferred relations after the explicit ones', () => {
-        const order = objectNode('Order', [field('shopId'), field('lines', { kind: 'array', item: { kind: 'reference', target: 'Line' } })]);
+        const order = objectNode('Order', [
+            field('shopId'),
+            field('lines', { kind: 'array', item: { kind: 'reference', target: 'Line' } }),
+        ]);
         const graph = SchemaGraph.create([shop, objectNode('Line', []), order]).withInferredRelations();
 
         expect(graph.relations.map((relation) => [relation.fieldName, relation.kind])).toEqual([

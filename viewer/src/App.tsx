@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Diagram } from './components/Diagram.js';
 import { Sidebar } from './components/Sidebar.js';
-import { fetchGraph, subscribeToChanges } from './graph-data.js';
-import type { GraphData } from './graph-data.js';
 import { collapseNewcomers, initiallyCollapsed, sourceColors } from './flow/appearance.js';
 import { buildEntities } from './flow/model.js';
+import type { GraphData } from './graph-data.js';
+import { fetchGraph, subscribeToChanges } from './graph-data.js';
 
 export function App() {
     const [graph, setGraph] = useState<GraphData | null>(null);

@@ -27,7 +27,7 @@ export function Sidebar(props: SidebarProps) {
 
     return (
         <aside className="sidebar">
-            <h1 className="sidebar__title">Zodiac</h1>
+            <h1 className="sidebar__title">Zodiag</h1>
             <p className="sidebar__summary">
                 {visibleCount} / {entities.length} schemas · {relationCount} relations
             </p>
@@ -51,7 +51,11 @@ export function Sidebar(props: SidebarProps) {
                     <button type="button" onClick={props.onExpandAll} disabled={props.collapsedCount === 0}>
                         expand all
                     </button>
-                    <button type="button" onClick={props.onCollapseAll} disabled={props.collapsedCount === entities.length}>
+                    <button
+                        type="button"
+                        onClick={props.onCollapseAll}
+                        disabled={props.collapsedCount === entities.length}
+                    >
                         collapse all
                     </button>
                 </span>
@@ -80,7 +84,10 @@ export function Sidebar(props: SidebarProps) {
                                     onChange={() => props.onToggleSource(source)}
                                 />
                                 {props.colors.has(source) && (
-                                    <span className="sidebar__swatch" style={{ background: props.colors.get(source) }} />
+                                    <span
+                                        className="sidebar__swatch"
+                                        style={{ background: props.colors.get(source) }}
+                                    />
                                 )}
                                 <span className="sidebar__file" title={source}>
                                     {source}

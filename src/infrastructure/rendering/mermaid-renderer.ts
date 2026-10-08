@@ -1,6 +1,6 @@
 import type { GraphRenderer } from '../../application/ports/graph-renderer.js';
-import { findReferences, formatTypeExpression } from '../../domain/index.js';
 import type { Cardinality, EnumNode, Field, ObjectNode, SchemaGraph } from '../../domain/index.js';
+import { findReferences, formatTypeExpression } from '../../domain/index.js';
 
 // Right-hand side of a relation: "a source has one / zero or one / zero or more targets".
 const CARDINALITY_SYMBOLS: Record<Cardinality, string> = {

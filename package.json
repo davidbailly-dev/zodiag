@@ -1,11 +1,11 @@
 {
-    "name": "zodiac",
-    "version": "0.1.0",
+    "name": "zodiag",
+    "version": "0.2.0",
     "description": "Visualize Zod schemas as diagrams",
     "private": true,
     "type": "module",
     "bin": {
-        "zodiac": "./dist/presentation/cli/main.js"
+        "zodiag": "./dist/presentation/cli/main.js"
     },
     "files": [
         "dist"
@@ -17,6 +17,9 @@
         "build": "tsc -p tsconfig.build.json && vite build",
         "prepack": "npm run build",
         "typecheck": "tsc --noEmit && tsc -p viewer/tsconfig.json",
+        "lint": "biome lint",
+        "format": "biome format --write",
+        "check": "biome check",
         "test": "vitest run",
         "test:watch": "vitest"
     },
@@ -33,6 +36,7 @@
         "jiti": "^2.7.0"
     },
     "devDependencies": {
+        "@biomejs/biome": "2.5.15",
         "@dagrejs/dagre": "^3.1.1",
         "@types/node": "^26.6.4",
         "@types/react": "^19.3.0",

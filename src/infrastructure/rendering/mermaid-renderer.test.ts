@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { SchemaGraph } from '../../domain/index.js';
 import type { Field, ObjectNode, SchemaNode, TypeExpression } from '../../domain/index.js';
+import { SchemaGraph } from '../../domain/index.js';
 import { MermaidRenderer } from './mermaid-renderer.js';
 
 const string: TypeExpression = { kind: 'primitive', name: 'string' };
@@ -90,7 +90,13 @@ describe('MermaidRenderer', () => {
         const output = render([
             objectNode('Mixed', [
                 field('choice', { kind: 'union', members: [string, number] }),
-                field('kind', { kind: 'union', members: [{ kind: 'literal', value: 'a' }, { kind: 'literal', value: 'b' }] }),
+                field('kind', {
+                    kind: 'union',
+                    members: [
+                        { kind: 'literal', value: 'a' },
+                        { kind: 'literal', value: 'b' },
+                    ],
+                }),
                 field('tags', { kind: 'record', key: string, value: { kind: 'primitive', name: 'boolean' } }),
                 field('pair', { kind: 'tuple', items: [string, number] }),
                 field('count', { kind: 'literal', value: 3 }),

@@ -1,189 +1,210 @@
-# Zodiac
+# Zodiag
 
-Visualize [Zod](https://zod.dev) schemas as diagrams.
+![Le viewer Zodiag affichant les schémas d'un projet : cartes, champs colorés par type et relations](assets/screenshot-01.png)
 
-Point Zodiac at a file or a folder of schemas (`order.ts`, `shop.ts`, `orderLine.ts`, ...) and it
-builds a graph of your schemas, their fields and the relations between them, shown in a local web
-viewer or exported as [Mermaid](https://mermaid.js.org).
+Visualiser des schémas [Zod](https://zod.dev) sous forme de diagrammes.
 
-> **Status: work in progress.** Schema extraction, the interactive viewer and the Mermaid export
-> are available from the command line. Features marked as *planned* are not implemented.
+Pointe Zodiag vers un fichier ou un dossier de schémas (`order.ts`, `shop.ts`, `orderLine.ts`, ...) et
+il construit un graphe de tes schémas, de leurs champs et des relations entre eux, affiché dans un
+viewer web local ou exporté en [Mermaid](https://mermaid.js.org).
 
-## Requirements
+> **Statut : en cours de développement.** L'extraction des schémas, le viewer interactif et l'export
+> Mermaid sont disponibles en ligne de commande. Les fonctionnalités marquées *prévu* ne sont pas
+> implémentées.
+
+## Prérequis
 
 - Node.js >= 20.11
-- Zod `^4.0.0` in the analyzed project (developed against 4.6.4)
+- Zod `^4.0.0` dans le projet analysé (développé avec la 4.6.4)
 
-## Getting started
+## Démarrage
 
 ```bash
 npm install
 npm run build
-node dist/presentation/cli/main.js ./path/to/schemas
+node dist/presentation/cli/main.js ./chemin/vers/schemas
 ```
 
-To get the `zodiac` command on your path while developing, run `npm link` after the build.
+Pour avoir la commande `zodiag` dans ton PATH pendant le développement, lance `npm link` après le
+build.
 
-`npm pack` builds the project and produces an installable tarball (`zodiac-<version>.tgz`) that
-contains the CLI and the viewer; installing it gives the `zodiac` command. Releases are described in
-the [changelog](CHANGELOG.md).
+`npm pack` construit le projet et produit une archive installable (`zodiag-<version>.tgz`) qui contient
+le CLI et le viewer ; son installation donne la commande `zodiag`. Les versions sont décrites dans le
+[changelog](CHANGELOG.md).
 
-## Usage
+## Utilisation
 
 ```bash
-# Open the interactive viewer for a folder of schemas (or a single file)
-zodiac ./src/schemas
+# Ouvrir le viewer interactif pour un dossier de schémas (ou un seul fichier)
+zodiag ./src/schemas
 
-# Print a Mermaid erDiagram instead
-zodiac ./src/schemas --format mermaid
+# Afficher un erDiagram Mermaid à la place
+zodiag ./src/schemas --format mermaid
 
-# Write the Mermaid diagram to a file (missing directories are created)
-zodiac ./src/schemas --format mermaid --output docs/schemas.mmd
+# Écrire le diagramme Mermaid dans un fichier (les dossiers manquants sont créés)
+zodiag ./src/schemas --format mermaid --output docs/schemas.mmd
 ```
 
-| Option                  | Description                                                              |
-|-------------------------|--------------------------------------------------------------------------|
-| `-f, --format <format>` | `viewer` (default) or `mermaid`                                          |
-| `-o, --output <file>`   | Write a text format to a file instead of the stdout (not for the viewer) |
-| `-p, --port <port>`     | Port of the viewer. Default: the first free port from 4000               |
-| `--no-open`             | Do not open the viewer in the browser                                    |
-| `--no-inferred-relations` | Do not link fields such as `shopId` to the `Shop` schema               |
-| `--no-watch`            | Do not reload the viewer when the schema files change                    |
+| Option                    | Description                                                                      |
+|---------------------------|----------------------------------------------------------------------------------|
+| `-f, --format <format>`   | `viewer` (par défaut) ou `mermaid`                                               |
+| `-o, --output <file>`     | Écrit un format texte dans un fichier au lieu de la sortie standard (pas pour le viewer) |
+| `-p, --port <port>`       | Port du viewer. Par défaut : le premier port libre à partir de 4000              |
+| `--no-open`               | N'ouvre pas le viewer dans le navigateur                                         |
+| `--no-inferred-relations` | Ne relie pas les champs comme `shopId` au schéma `Shop`                          |
+| `--no-watch`              | Ne recharge pas le viewer quand les fichiers de schémas changent                 |
 
-Warnings (files that fail to load) go to the standard error, so the standard output stays a valid
-diagram. The command exits with an error if the target does not exist or contains no schema.
+Les avertissements (fichiers qui échouent au chargement) vont sur la sortie d'erreur, ce qui garde la
+sortie standard sous forme de diagramme valide. La commande se termine en erreur si la cible n'existe
+pas ou ne contient aucun schéma.
 
 ### Viewer
 
-`zodiac <target>` starts a small web server on `127.0.0.1` (never exposed on the network), prints
-its address and opens it in your browser. Stop it with `Ctrl+C`.
+`zodiag <cible>` démarre un petit serveur web sur `127.0.0.1` (jamais exposé sur le réseau), affiche
+son adresse et l'ouvre dans ton navigateur. Arrête-le avec `Ctrl+C`.
 
-- Each object schema is a card listing its fields, their types, `?` for optional fields and their
-  constraints. Enum fields are shown in orange: hover one to see its values.
-- Relations are arrows starting from the field that holds them, labelled with their multiplicity
-  (`1`, `0..1`, `0..*`). Dashed arrows are [inferred relations](#inferred-relations); a checkbox in
-  the sidebar shows or hides them.
-- Click a schema to highlight its links and fade the rest; click the background to reset.
-- Cards can be folded with the arrow in their header (links then start from the header), or all at
-  once from the sidebar. Beyond 10 schemas, cards start folded so that the whole graph stays readable;
-  on a graph with more than 20 relations the multiplicity labels only show on the highlighted links.
-- When schemas come from several files, each file has its own color, shown on the cards and in the
-  sidebar.
-- The sidebar filters schemas by name and by source file. Cards can be dragged; zoom and pan with
-  the mouse, the controls or the minimap.
-- The theme follows your system (light or dark).
+- Chaque schéma objet est une carte listant ses champs, leurs types, `?` pour les champs optionnels
+  et leurs contraintes. Les champs enum sont affichés en orange : survole-en un pour voir ses valeurs.
+- Les relations sont des flèches partant du champ qui les porte, étiquetées avec leur multiplicité
+  (`1`, `0..1`, `0..*`). Les flèches en pointillé sont des [relations inférées](#relations-inférées) ;
+  une case à cocher dans la barre latérale permet de les afficher ou de les masquer.
+- Clique sur un schéma pour mettre ses liens en évidence et estomper le reste ; clique sur le fond
+  pour réinitialiser.
+- Les cartes se replient avec la flèche de leur en-tête (les liens partent alors de l'en-tête), ou
+  toutes d'un coup depuis la barre latérale. Au-delà de 10 schémas, les cartes démarrent repliées pour
+  que l'ensemble du graphe reste lisible ; sur un graphe de plus de 20 relations, les étiquettes de
+  multiplicité ne s'affichent que sur les liens mis en évidence.
+- Quand les schémas viennent de plusieurs fichiers, chaque fichier a sa propre couleur, visible sur
+  les cartes et dans la barre latérale.
+- La barre latérale filtre les schémas par nom et par fichier source. Les cartes peuvent être
+  déplacées ; zoome et déplace la vue avec la souris, les contrôles ou la minimap.
+- Le thème suit celui de ton système (clair ou sombre).
 
-#### Live reload
+#### Rechargement automatique
 
-While the viewer runs, Zodiac watches the schema files of the target. When one is added, modified or
-removed, the diagram updates within about a second, without losing your search, file filters or
-folded cards (the sidebar shows when it was last reloaded). Disable it with `--no-watch`.
+Tant que le viewer tourne, Zodiag surveille les fichiers de schémas de la cible. Quand l'un d'eux est
+ajouté, modifié ou supprimé, le diagramme se met à jour en environ une seconde, sans perdre ta
+recherche, tes filtres de fichiers ni les cartes repliées (la barre latérale indique l'heure du dernier
+rechargement). Désactive-le avec `--no-watch`.
 
-- A file that no longer loads (a syntax error, say) is reported in the terminal and left out; the
-  other schemas stay on screen. If nothing can be extracted at all, the previous diagram is kept.
-- Only the files of the target are watched, not the modules they import from elsewhere: edit one
-  of the target's files, or restart, after changing a shared module.
-- Files are polled once per second rather than watched with the operating system's notifications,
-  so it behaves the same everywhere and never descends into `node_modules`.
+- Un fichier qui ne se charge plus (une erreur de syntaxe, par exemple) est signalé dans le terminal et
+  écarté ; les autres schémas restent affichés. Si rien ne peut être extrait, le diagramme précédent
+  est conservé.
+- Seuls les fichiers de la cible sont surveillés, pas les modules qu'ils importent depuis ailleurs :
+  modifie l'un des fichiers de la cible, ou redémarre, après avoir changé un module partagé.
+- Les fichiers sont interrogés une fois par seconde plutôt que surveillés via les notifications du
+  système d'exploitation : le comportement est identique partout et ne descend jamais dans
+  `node_modules`.
 
-### Mermaid output
+### Sortie Mermaid
 
-The Mermaid text can be pasted into a Markdown file (GitHub renders ` ```mermaid ` blocks) or into
-the [Mermaid Live Editor](https://mermaid.live).
+Le texte Mermaid peut être collé dans un fichier Markdown (GitHub rend les blocs ` ```mermaid `) ou
+dans le [Mermaid Live Editor](https://mermaid.live).
 
+- Chaque schéma objet est une entité dont les attributs sont les champs. Les champs optionnels, les
+  contraintes (`int, >= 0`) et les descriptions vont dans le commentaire de l'attribut.
+- Les enums ne sont pas des entités : elles apparaissent comme types d'attribut, avec leurs valeurs
+  dans le commentaire (`one of: completed | abandoned | refunded`).
+- Les types complexes sont aplatis en ce que Mermaid accepte (`string | number` devient
+  `string_or_number`).
+- Une relation se lit « une source a un / zéro ou un / zéro ou plusieurs cibles » :
+  `Order ||--o{ OrderLine : "lines"`. Les relations inférées utilisent un trait pointillé :
+  `Order ||..|| Shop : "shopId"`.
 
-- Each object schema is an entity whose attributes are the fields. Optional fields, constraints
-  (`int, >= 0`) and descriptions go in the attribute comment.
-- Enums are not entities: they appear as attribute types, with their values in the comment
-  (`one of: completed | abandoned | refunded`).
-- Complex types are flattened to what Mermaid accepts (`string | number` becomes `string_or_number`).
-- A relation reads "a source has one / zero or one / zero or more targets":
-  `Order ||--o{ OrderLine : "lines"`. Inferred relations use a dashed line: `Order ||..|| Shop : "shopId"`.
+## Fonctionnement
 
-## How it works
+1. **Extraction** : les fichiers de schémas sont chargés à l'exécution avec
+   [jiti](https://github.com/unjs/jiti) et les objets Zod sont parcourus via leur définition interne.
+   Chaque schéma objet ou enum exporté devient un nœud : un champ qui pointe vers un autre schéma
+   exporté devient donc une relation.
+2. **Modèle** : le résultat est un `SchemaGraph` indépendant de tout framework (nœuds, champs,
+   relations).
+3. **Rendu** : le graphe est soit exporté en texte Mermaid, soit servi en JSON au viewer, une
+   application React statique ([React Flow](https://reactflow.dev) avec une disposition
+   [dagre](https://github.com/dagrejs/dagre)) que le CLI sert en local.
 
-1. **Extraction**: the schema files are loaded at runtime with [jiti](https://github.com/unjs/jiti)
-   and the Zod objects are walked through their internal definition. Every exported object or enum
-   schema becomes a node, so a field pointing to another exported schema becomes a relation.
-2. **Model**: the result is a framework-agnostic `SchemaGraph` (nodes, fields, relations).
-3. **Rendering**: the graph is either exported as Mermaid text, or served as JSON to the viewer, a
-   static React app ([React Flow](https://reactflow.dev) with a [dagre](https://github.com/dagrejs/dagre)
-   layout) that the CLI serves locally.
+Ce que l'extraction comprend :
 
-What the extraction understands:
+- Les objets, enums, tableaux, sets, tuples, records, unions, intersections, littéraux, objets
+  imbriqués et schémas récursifs (`z.lazy`, getters).
+- Les champs `optional`, `nullable`, `default` et leurs contraintes (`>= 0`, `min 1`, `email`,
+  `int`...).
+- La composition : spread de shapes, `.extend()`, `.pick()`, `.omit()`...
+- Les descriptions `.describe()`.
+- Les enums sont affichées comme types de champ, pas comme relations. Les autres schémas exportés,
+  comme `z.array(ShopSchema)`, sont des alias, résolus en `Shop[]` là où ils sont utilisés au lieu de
+  devenir des nœuds.
+- Les noms de nœuds perdent le suffixe `Schema` (`ShopSchema` devient `Shop`) ; en cas de collision de
+  noms entre deux fichiers, le nom du fichier est préfixé (`item.Item`).
 
-- Objects, enums, arrays, sets, tuples, records, unions, intersections, literals, nested objects and
-  recursive schemas (`z.lazy`, getters).
-- `optional`, `nullable`, `default` fields and their constraints (`>= 0`, `min 1`, `email`, `int`...).
-- Composition: spread shapes, `.extend()`, `.pick()`, `.omit()`...
-- `.describe()` descriptions.
-- Enums are shown as field types, not as relations. Other exported schemas such as
-  `z.array(ShopSchema)` are aliases, resolved to `Shop[]` where they are used instead of becoming nodes.
-- Node names drop the `Schema` suffix (`ShopSchema` becomes `Shop`); on a name collision between two
-  files the file name is prepended (`item.Item`).
+Pas encore géré : les commentaires du source et `export default`.
 
-Not supported yet: source comments and `export default`.
+### Relations inférées
 
-### Inferred relations
+Zod ne sait pas exprimer les clés étrangères : `shopId: z.string()` n'est qu'une chaîne. Zodiag devine
+le lien lorsque toutes ces conditions sont réunies, et le dessine en relation pointillée (désactivable
+avec `--no-inferred-relations`) :
 
-Zod cannot express foreign keys, so `shopId: z.string()` is just a string. Zodiac guesses the link
-when all of these hold, and draws it as a dashed relation (disable it with `--no-inferred-relations`):
+- le champ contient un simple identifiant : un `string` ou un `number` (`shopIds: z.array(z.string())`
+  est une liste d'identifiants et pointe vers plusieurs) ;
+- son nom est un nom de schéma suivi de `Id` ou `_id` (`shopId`, `order_line_id` -> `OrderLine`), sans
+  tenir compte de la casse ni des underscores ;
+- ce nom désigne exactement un schéma objet, différent de celui qui porte le champ (un nom qui
+  correspond à plusieurs schémas est ignoré). Les enums ne sont jamais des cibles.
 
-- the field holds a plain identifier: a `string` or a `number` (`shopIds: z.array(z.string())` is a
-  list of identifiers and points to many);
-- its name is a schema name followed by `Id` or `_id` (`shopId`, `order_line_id` -> `OrderLine`),
-  ignoring case and underscores;
-- that name designates exactly one object schema, other than the one holding the field (a name that
-  matches several schemas is left alone). Enums are never targets.
+Les identifiants optionnels et nullables donnent une relation `0..1`. Un simple champ `id`, ou un nom
+comme `userId` sans schéma `User`, ne crée rien.
 
-Optional and nullable identifiers give a `0..1` relation. A plain `id` field, or a name such as
-`userId` with no `User` schema, creates nothing.
-
-> **Note:** analyzing a file executes it (imports run their top-level code). Only point Zodiac at
-> code you trust. Files that fail to load are reported and skipped.
+> **Note :** analyser un fichier l'exécute (les imports lancent leur code de premier niveau). Ne pointe
+> Zodiag que vers du code de confiance. Les fichiers qui échouent au chargement sont signalés et
+> ignorés.
 
 ## Architecture
 
-Domain-Driven Design, dependencies pointing towards the domain:
+Domain-Driven Design, avec des dépendances orientées vers le domaine :
 
 ```
 src/
-  domain/          pure model (SchemaGraph, SchemaNode, Field, Relation, TypeExpression)
-  application/     use case (ExtractSchemaGraph) and ports (ModuleLoader, SchemaIntrospector,
+  domain/          modèle pur (SchemaGraph, SchemaNode, Field, Relation, TypeExpression)
+  application/     cas d'usage (ExtractSchemaGraph) et ports (ModuleLoader, SchemaIntrospector,
                    GraphRenderer, ViewerLauncher)
-  infrastructure/  adapters (jiti module loader, Zod v4 introspection, Mermaid renderer,
-                   local HTTP server for the viewer)
+  infrastructure/  adaptateurs (chargeur de modules jiti, introspection Zod v4, rendu Mermaid,
+                   serveur HTTP local pour le viewer)
   presentation/    CLI
-viewer/            the web viewer (Vite + React), built into dist/viewer
+viewer/            le viewer web (Vite + React), construit dans dist/viewer
 ```
 
-The domain knows nothing about Zod: the Zod adapter recognizes schemas by their internal shape
-rather than with `instanceof`, because the analyzed project ships its own copy of Zod.
+Le domaine ne connaît rien de Zod : l'adaptateur Zod reconnaît les schémas par leur forme interne
+plutôt qu'avec `instanceof`, car le projet analysé embarque sa propre copie de Zod.
 
 ## Scripts
 
-| Script               | Description                                              |
-|----------------------|----------------------------------------------------------|
-| `npm run build`      | Compile the CLI to `dist/` and build the viewer to `dist/viewer/` |
-| `npm run typecheck`  | Type-check the CLI and the viewer without emitting       |
-| `npm test`           | Run the tests once (Vitest)                              |
-| `npm run test:watch` | Run the tests in watch mode                              |
+| Script               | Description                                                                |
+|----------------------|----------------------------------------------------------------------------|
+| `npm run build`      | Compile le CLI dans `dist/` et construit le viewer dans `dist/viewer/`     |
+| `npm run typecheck`  | Vérifie les types du CLI et du viewer sans rien émettre                    |
+| `npm test`           | Lance les tests une fois (Vitest)                                          |
+| `npm run test:watch` | Lance les tests en mode watch                                              |
+| `npm run lint`       | Analyse le code avec [Biome](https://biomejs.dev) (règles recommandées)    |
+| `npm run format`     | Formate le code avec Biome (modifie les fichiers)                          |
+| `npm run check`      | Lint, format et ordre des imports en lecture seule (utile en CI)           |
 
-The viewer is served from `dist/viewer`, so `npm run build` must have been run before using it.
+Le viewer est servi depuis `dist/viewer` : `npm run build` doit donc avoir été exécuté avant de
+l'utiliser.
 
-## Contributing
+## Contribuer
 
-The project follows the original [GitFlow](https://nvie.com/posts/a-successful-git-branching-model/):
-`main`, `develop`, `feature/*`, `release/*`, `hotfix/*`. Branch features from `develop`, never
-commit directly on `main` or `develop`. Commits follow
-[Conventional Commits](https://www.conventionalcommits.org) and are written in English.
+Le projet suit le [GitFlow](https://nvie.com/posts/a-successful-git-branching-model/) original :
+`main`, `develop`, `feature/*`, `release/*`, `hotfix/*`. Crée les features depuis `develop`, ne
+commite jamais directement sur `main` ou `develop`. Les commits suivent les
+[Conventional Commits](https://www.conventionalcommits.org) et sont rédigés en anglais.
 
-## Roadmap
+## Feuille de route
 
-- [x] Project setup
-- [x] Domain model and Zod v4 extractor
-- [x] Mermaid export and CLI command
-- [x] Interactive web viewer
-- [x] Inferred relations (`shopId` -> `Shop`)
-- [x] Watch mode (reload the viewer when schemas change)
-- [ ] Source comments
+- [x] Mise en place du projet
+- [x] Modèle de domaine et extracteur Zod v4
+- [x] Export Mermaid et commande CLI
+- [x] Viewer web interactif
+- [x] Relations inférées (`shopId` -> `Shop`)
+- [x] Mode watch (recharge le viewer quand les schémas changent)
+- [ ] Commentaires du source

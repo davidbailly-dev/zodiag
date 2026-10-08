@@ -1,20 +1,13 @@
-import {
-    Background,
-    Controls,
-    MarkerType,
-    MiniMap,
-    ReactFlow,
-    useNodesState,
-} from '@xyflow/react';
 import type { Edge } from '@xyflow/react';
+import { Background, Controls, MarkerType, MiniMap, ReactFlow, useNodesState } from '@xyflow/react';
 import { useEffect, useMemo, useState } from 'react';
 import type { Relation } from '../../../src/domain/index.js';
 import { DENSE_RELATION_THRESHOLD } from '../flow/appearance.js';
 import { computeLayout } from '../flow/layout.js';
-import { cardinalityLabel } from '../flow/model.js';
 import type { EntityData } from '../flow/model.js';
-import { EntityNode } from './EntityNode.js';
+import { cardinalityLabel } from '../flow/model.js';
 import type { EntityFlowNode } from './EntityNode.js';
+import { EntityNode } from './EntityNode.js';
 
 const nodeTypes = { entity: EntityNode };
 
@@ -57,7 +50,8 @@ export function Diagram({ entities, relations, collapsed, colors, onToggleCollap
             relations
                 .filter((relation) => visibleNames.has(relation.source) && visibleNames.has(relation.target))
                 .map((relation): Edge => {
-                    const isActive = selected !== null && (relation.source === selected || relation.target === selected);
+                    const isActive =
+                        selected !== null && (relation.source === selected || relation.target === selected);
                     return {
                         id: `${relation.source}.${relation.fieldName}->${relation.target}`,
                         source: relation.source,

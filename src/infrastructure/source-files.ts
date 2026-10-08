@@ -49,8 +49,7 @@ async function collectFiles(directory: string): Promise<string[]> {
 
 function isSourceFile(fileName: string): boolean {
     return (
-        SOURCE_EXTENSIONS.has(path.extname(fileName)) &&
-        !IGNORED_SUFFIXES.some((suffix) => fileName.endsWith(suffix))
+        SOURCE_EXTENSIONS.has(path.extname(fileName)) && !IGNORED_SUFFIXES.some((suffix) => fileName.endsWith(suffix))
     );
 }
 

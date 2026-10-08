@@ -12,12 +12,14 @@ let directory: string;
 const handles: WatchHandle[] = [];
 
 beforeEach(async () => {
-    directory = await mkdtemp(path.join(os.tmpdir(), 'zodiac-watch-'));
+    directory = await mkdtemp(path.join(os.tmpdir(), 'zodiag-watch-'));
     await writeFile(path.join(directory, 'shop.ts'), 'export const a = 1;');
 });
 
 afterEach(async () => {
-    handles.splice(0).forEach((handle) => handle.close());
+    handles.splice(0).forEach((handle) => {
+        handle.close();
+    });
     await rm(directory, { recursive: true });
 });
 
