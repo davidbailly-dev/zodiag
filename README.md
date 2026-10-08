@@ -1,5 +1,7 @@
 # Zodiag
 
+![Le viewer Zodiag affichant les schémas d'un projet : cartes, champs colorés par type et relations](assets/screenshot-01.png)
+
 Visualiser des schémas [Zod](https://zod.dev) sous forme de diagrammes.
 
 Pointe Zodiag vers un fichier ou un dossier de schémas (`order.ts`, `shop.ts`, `orderLine.ts`, ...) et
