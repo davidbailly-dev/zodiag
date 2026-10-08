@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Field, SchemaNode, TypeExpression } from '../../../src/domain/index.js';
 import { SchemaGraph } from '../../../src/domain/index.js';
-import { buildEntities, cardinalityLabel } from './model.js';
+import { buildEntities, cardinalityLabel, findEnumOnlyFiles } from './model.js';
 
 const string: TypeExpression = { kind: 'primitive', name: 'string' };
 const ref = (target: string): TypeExpression => ({ kind: 'reference', target });
@@ -64,5 +64,21 @@ describe('cardinalityLabel', () => {
         expect(cardinalityLabel('one')).toBe('1');
         expect(cardinalityLabel('zero-or-one')).toBe('0..1');
         expect(cardinalityLabel('many')).toBe('0..*');
+    });
+});
+
+describe('findEnumOnlyFiles', () => {
+    it('reports files that hold enums but no object schema, with their enum count', () => {
+        const graph = SchemaGraph.create([
+            ...nodes,
+            { kind: 'enum', name: 'Channel', source: 'common.ts', values: ['paid', 'organic'] },
+            { kind: 'enum', name: 'Device', source: 'common.ts', values: ['mobile', 'desktop'] },
+        ]);
+        expect(findEnumOnlyFiles(graph, buildEntities(graph))).toEqual([{ source: 'common.ts', enumCount: 2 }]);
+    });
+
+    it('ignores files that already have a card', () => {
+        const graph = SchemaGraph.create(nodes);
+        expect(findEnumOnlyFiles(graph, buildEntities(graph))).toEqual([]);
     });
 });

@@ -1,8 +1,10 @@
-import type { EntityData } from '../flow/model.js';
+import type { EntityData, EnumFile } from '../flow/model.js';
 
 interface SidebarProps {
     entities: readonly EntityData[];
     sources: readonly string[];
+    // Files with enums only: no card to show or hide, listed for information.
+    enumFiles: readonly EnumFile[];
     hiddenSources: ReadonlySet<string>;
     query: string;
     visibleCount: number;
@@ -97,6 +99,20 @@ export function Sidebar(props: SidebarProps) {
                         </li>
                     );
                 })}
+                {props.enumFiles.map(({ source, enumCount }) => (
+                    <li
+                        key={source}
+                        className="sidebar__file-row--enums"
+                        title="Enums are shown in the fields that use them"
+                    >
+                        <span className="sidebar__file" title={source}>
+                            {source}
+                        </span>
+                        <span className="sidebar__count">
+                            {enumCount} {enumCount === 1 ? 'enum' : 'enums'}
+                        </span>
+                    </li>
+                ))}
             </ul>
 
             {props.inferredCount > 0 && (

@@ -76,8 +76,9 @@ son adresse et l'ouvre dans ton navigateur. Arrête-le avec `Ctrl+C`.
   multiplicité ne s'affichent que sur les liens mis en évidence.
 - Quand les schémas viennent de plusieurs fichiers, chaque fichier a sa propre couleur, visible sur
   les cartes et dans la barre latérale.
-- La barre latérale filtre les schémas par nom et par fichier source. Les cartes peuvent être
-  déplacées ; zoome et déplace la vue avec la souris, les contrôles ou la minimap.
+- La barre latérale filtre les schémas par nom et par fichier source. Un fichier qui ne contient que des
+  enums (un `common.ts`, par exemple) n'a pas de carte : il est listé en grisé avec son nombre d'enums.
+  Les cartes peuvent être déplacées ; zoome et déplace la vue avec la souris, les contrôles ou la minimap.
 - Le thème suit celui de ton système (clair ou sombre).
 
 #### Rechargement automatique
