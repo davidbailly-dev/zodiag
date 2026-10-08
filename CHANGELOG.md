@@ -5,6 +5,12 @@ All notable changes to Zodiag are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres
 to [Semantic Versioning](https://semver.org/).
 
+## [0.2.1] - 2026-10-08
+
+### Added
+
+- The project is released under the MIT license (`LICENSE` file and `license` field of `package.json`).
+
 ## [0.2.0] - 2026-10-08
 
 ### Changed
