@@ -5,6 +5,13 @@ All notable changes to Zodiag are documented in this file.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres
 to [Semantic Versioning](https://semver.org/).
 
+## [0.2.2] - 2026-10-08
+
+### Fixed
+
+- The viewer sidebar now lists files that only contain enums (a shared `common.ts`, for example) with their
+  enum count. They were missing from the file list because enums are folded into the fields that use them.
+
 ## [0.2.1] - 2026-10-08
 
 ### Added
