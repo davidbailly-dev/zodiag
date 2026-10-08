@@ -54,6 +54,25 @@ export function buildEntities(graph: GraphData): EntityData[] {
     });
 }
 
+export type EnumFile = {
+    source: string;
+    enumCount: number;
+};
+
+// Files that only hold enums have no card, so they would be missing from the file list: report them apart.
+export function findEnumOnlyFiles(graph: GraphData, entities: readonly EntityData[]): EnumFile[] {
+    const entitySources = new Set(entities.map((entity) => entity.source));
+    const counts = new Map<string, number>();
+    for (const node of graph.nodes) {
+        if (node.kind === 'enum' && !entitySources.has(node.source)) {
+            counts.set(node.source, (counts.get(node.source) ?? 0) + 1);
+        }
+    }
+    return [...counts]
+        .map(([source, enumCount]) => ({ source, enumCount }))
+        .sort((left, right) => left.source.localeCompare(right.source));
+}
+
 function toEntityField(
     entityName: string,
     field: Field,
